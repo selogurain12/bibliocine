@@ -4,10 +4,10 @@ import { BookOpen, CircleUserRound, Film } from "lucide-react-native";
 
 export function AppBar() {
     return (
-        <View className="h-12 bg-amber-100 px-4 flex-row items-center gap-2">
+        <View className="h-16 bg-amber-100 px-4 flex-row items-center gap-2">
             <View className="flex-row justify-start gap-2 w-1/3">
-                <Film />
-                <BookOpen  />
+                <Film color="#0088F0" />
+                <BookOpen color="#47C047"  />
             </View>
             <View className="flex-row justify-center gap-2 w-1/3">
                 <Text className="text-black text-lg font-bold">Bibliociné</Text>
