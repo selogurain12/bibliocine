@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
     "lint": "eslint \"{api,packages}/**/*.{ts,tsx}\" --fix",
-    "typecheck": "tsc --noEmit -p tsconfig.base.json"
+    "typecheck": "tsc --noEmit -p tsconfig.base.json",
+    "build_api": "pnpm i && pnpm run migration -w api && pnpm run up -w api && pnpm run build -w api",
+    "start_api": "pnpm run start -w api"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": "eslint --config .eslintrc.json --fix"

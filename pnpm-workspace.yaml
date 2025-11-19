@@ -1,0 +1,6 @@
+packages:
+  - "api"
+  - "packages"
+  - "webui"
+
+autoInstallPeers: true
