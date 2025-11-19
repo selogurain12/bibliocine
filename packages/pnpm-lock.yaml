@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@ts-rest/core':
-        specifier: ^3.52.1
+        specifier: 3.52.1
         version: 3.52.1(zod@3.22.4)
       reflect-metadata:
         specifier: 0.2.2

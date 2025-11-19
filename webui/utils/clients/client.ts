@@ -1,19 +1,30 @@
-import { AppRouter } from "@ts-rest/core";
-import { initQueryClient } from "@ts-rest/react-query";
+import { initTsrReactQuery } from "@ts-rest/react-query/v5";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const apiUrl = import.meta.env.VITE_API_URL;
+import { localStorageBasePrefixVariable } from "../local-storage-base-prefix-variable";
+import { biblioCineContract } from "../../../packages/src/contracts/index.contract";
 
-export function createClient<Tcontract extends AppRouter>(
-	contract: Tcontract,
-	token: string | null
-) {
-	const baseHeader = token ? `Bearer ${token}` : "";
+const apiUrl = "http://10.0.2.1:3000";
+console.log("API URL:", apiUrl);
 
-	return initQueryClient(contract, {
-		baseUrl: apiUrl,
-		baseHeaders: {
-			"Content-Type": "application/json",
-			Authorization: baseHeader,
-		},
-	});
+async function getIdTokenAsync(): Promise<string | null> {
+  try {
+    const raw = await AsyncStorage.getItem(localStorageBasePrefixVariable("idToken"));
+    return raw;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du token :", error);
+    return null;
+  }
 }
+export const clientPromise = initTsrReactQuery(
+  biblioCineContract,
+  {
+    baseUrl: apiUrl,
+    headers: {
+      "x-app-source": "ts-rest",
+      "x-access-token": async () => await getIdTokenAsync(),
+    },
+  }
+);
+
+export const client = clientPromise;
