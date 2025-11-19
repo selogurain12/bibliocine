@@ -1,49 +1,48 @@
-import { randomUUID } from "crypto";
-import { Entity, PrimaryKey, Property, UuidType } from "@mikro-orm/postgresql";
+import { Entity, Property } from "@mikro-orm/postgresql";
 
 @Entity()
 export class Book {
-  @PrimaryKey({
-    type: UuidType,
+  @Property({
+    type: "varchar",
   })
-  public id: string = randomUUID();
+  public id!: string;
 
   @Property({ type: "varchar" })
-  title: string;
+  public title!: string;
 
   @Property({ type: "array" })
-  authors: string[];
+  public authors!: string[];
 
   @Property({ type: "varchar" })
-  publisher: string;
+  public publisher!: string;
 
   @Property({ type: "varchar" })
-  imageLink: string;
+  public imageLink!: string;
 
   @Property({ type: "varchar" })
-  publisherDate: string;
+  public publisherDate!: string;
 
   @Property({ type: "text" })
-  description: string;
+  public description!: string;
 
   @Property({ type: "varchar" })
-  industryIdentifierstype: string | undefined;
+  public industryIdentifierstype!: string | undefined;
 
   @Property({ type: "varchar" })
-  industryIdentifieridentyfier: string | undefined;
+  public industryIdentifieridentyfier!: string | undefined;
 
   @Property({ type: "int" })
-  pageCount: number;
+  public pageCount!: number;
 
   @Property({ type: "array" })
-  categories: string[];
+  public categories!: string[];
 
   @Property({ type: "int" })
-  retailPriceamount: number | undefined;
+  public retailPriceamount!: number | undefined;
 
   @Property({ type: "varchar" })
-  retailPricecurrencyCode: string | undefined;
+  public retailPricecurrencyCode!: string | undefined;
 
   @Property({ type: "varchar" })
-  retailPricebuyLink: string | undefined;
+  public retailPricebuyLink!: string | undefined;
 }

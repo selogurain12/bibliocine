@@ -5,44 +5,44 @@ export class Movie {
   @Property({
     type: "varchar",
   })
-  public id: string;
+  public id!: string;
 
   @Property({ type: "varchar" })
-  public backdropPath: string;
+  public backdropPath!: string;
 
   @Property({ type: "array" })
-  public genreIds: string[];
+  public genreIds!: string[];
 
   @Property({ type: "varchar" })
-  public originalLanguage: string;
+  public originalLanguage!: string;
 
   @Property({ type: "varchar" })
-  public originalTitle: string;
+  public originalTitle!: string;
 
   @Property({ type: "text" })
-  public overview: string;
+  public overview!: string;
 
   @Property({ type: "varchar" })
-  public posterPath: string;
+  public posterPath!: string;
 
   @Property({ type: "varchar" })
-  public releaseDate: string;
+  public releaseDate!: string;
 
   @Property({ type: "varchar" })
-  public title: string;
+  public title!: string;
 
   @Property({ type: "int" })
-  public budget: number;
+  public budget!: number;
 
   @Property({ type: "varchar" })
-  public homepage: string;
+  public homepage!: string;
 
   @Property({ type: "int" })
-  public revenue: number;
+  public revenue!: number;
 
   @Property({ type: "int" })
-  public runtime: number;
+  public runtime!: number;
 
   @Property({ type: "number" })
-  public voteAverage: number;
+  public voteAverage!: number;
 }
