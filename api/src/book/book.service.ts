@@ -16,20 +16,20 @@ export class BookService {
     const books: Book[] = response.data.items.map((item: ReturnApiBookDto) => ({
       id: item.id,
       title: item.volumeInfo.title,
-      authors: item.volumeInfo.authors,
-      publisher: item.volumeInfo.publisher,
-      imageLink: item.volumeInfo.imageLinks.thumbnail,
-      publisherDate: item.volumeInfo.publishedDate,
-      description: item.volumeInfo.description,
-      industryIdentifierstype: item.volumeInfo.industryIdentifiers[0]?.type,
-      industryIdentifieridentyfier:
-        item.volumeInfo.industryIdentifiers[0]?.identifier,
-      pageCount: item.volumeInfo.pageCount,
-      categories: item.volumeInfo.categories,
-      retailPriceamount: item.saleInfo?.retailPrice?.amount,
-      retailPricecurrencyCode: item.saleInfo?.retailPrice?.currencyCode,
-      retailPricebuyLink: item.saleInfo?.buyLink,
+      authors: item.volumeInfo.authors ?? [],
+      publisher: item.volumeInfo.publisher ?? "Unknown publisher",
+      imageLink: item.volumeInfo.imageLinks?.thumbnail ?? null,
+      publisherDate: item.volumeInfo.publishedDate ?? null,
+      description: item.volumeInfo.description ?? "",
+      industryIdentifierstype: item.volumeInfo.industryIdentifiers?.[0]?.type ?? null,
+      industryIdentifieridentyfier: item.volumeInfo.industryIdentifiers?.[0]?.identifier ?? null,
+      pageCount: item.volumeInfo.pageCount ?? 0,
+      categories: item.volumeInfo.categories ?? [],
+      retailPriceamount: item.saleInfo?.retailPrice?.amount ?? undefined,
+      retailPricecurrencyCode: item.saleInfo?.retailPrice?.currencyCode ?? undefined,
+      retailPricebuyLink: item.saleInfo?.buyLink ?? undefined,
     }));
+
     return {
       data: books,
       total: books.length,
@@ -46,20 +46,20 @@ export class BookService {
       const book: Book = {
         id: item.id,
         title: item.volumeInfo.title,
-        authors: item.volumeInfo.authors,
-        publisher: item.volumeInfo.publisher,
-        imageLink: item.volumeInfo.imageLinks.thumbnail,
-        publisherDate: item.volumeInfo.publishedDate,
-        description: item.volumeInfo.description,
-        industryIdentifierstype: item.volumeInfo.industryIdentifiers[0]?.type,
-        industryIdentifieridentyfier:
-          item.volumeInfo.industryIdentifiers[0]?.identifier,
-        pageCount: item.volumeInfo.pageCount,
-        categories: item.volumeInfo.categories,
-        retailPriceamount: item.saleInfo?.retailPrice?.amount,
-        retailPricecurrencyCode: item.saleInfo?.retailPrice?.currencyCode,
-        retailPricebuyLink: item.saleInfo?.buyLink,
+        authors: item.volumeInfo.authors ?? [],
+        publisher: item.volumeInfo.publisher ?? "Unknown publisher",
+        imageLink: item.volumeInfo.imageLinks?.thumbnail ?? null,
+        publisherDate: item.volumeInfo.publishedDate ?? null,
+        description: item.volumeInfo.description ?? "",
+        industryIdentifierstype: item.volumeInfo.industryIdentifiers?.[0]?.type ?? null,
+        industryIdentifieridentyfier: item.volumeInfo.industryIdentifiers?.[0]?.identifier ?? null,
+        pageCount: item.volumeInfo.pageCount ?? 0,
+        categories: item.volumeInfo.categories ?? [],
+        retailPriceamount: item.saleInfo?.retailPrice?.amount ?? undefined,
+        retailPricecurrencyCode: item.saleInfo?.retailPrice?.currencyCode ?? undefined,
+        retailPricebuyLink: item.saleInfo?.buyLink ?? undefined,
       };
+
 
       return book;
     } catch (error) {
