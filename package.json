@@ -35,5 +35,16 @@
     "husky": "^8.0.0",
     "lint-staged": "^16.2.6",
     "typescript-eslint": "^8.46.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "zod": "^3.22.4"
+    },
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@scarf/scarf",
+      "bcrypt",
+      "unrs-resolver"
+    ]
   }
 }
