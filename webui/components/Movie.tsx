@@ -10,34 +10,36 @@ import { MovieDto } from "../../packages/src/dtos/movie.dto";
 export function Movie() {
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = client.movies.getAllMovies.useQuery({
+  const { data, isLoading, refetch } = client.movies.getAllMovies.useQuery({
     queryKey: queryKeys.movies.getAllMovies({
       pathParams: { search },
     }),
     queryData: {
       params: { search },
     },
+    enabled: false,
   });
 
-  console.log("Données des films :", data);
-
   const renderItem = ({ item }: { item: MovieDto }) => {
-  const imageUri = item.posterPath ?? "https://via.placeholder.com/100x150?text=No+Image";
+    const imageUri = item.posterPath
+      ? `https://image.tmdb.org/t/p/original/${item.posterPath}`
+      : "https://via.placeholder.com/100x150?text=No+Image";
 
-  return (
-    <View className="w-1/2 p-2">
-      <View className="bg-white rounded shadow p-2 items-center">
-        <Image
-          source={{ uri: imageUri }}
-          style={{ width: 100, height: 150, borderRadius: 8 }}
-          resizeMode="cover"
-        />
-        <Text className="mt-2 text-center">{item.title}</Text>
+    return (
+      <View className="flex-1 m-2">
+        <View className="flex-1 bg-white rounded-lg shadow items-center p-2 border border-gray-200">
+          <Image
+            source={{ uri: imageUri }}
+            className="w-full aspect-[2/3] rounded-md"
+            resizeMode="cover"
+          />
+          <Text className="mt-2 text-center" numberOfLines={2}>
+            {item.title}
+          </Text>
+        </View>
       </View>
-    </View>
-  );
-};
-
+    );
+  };
 
   return (
     <View className="p-2">
@@ -52,7 +54,7 @@ export function Movie() {
           variant="outline"
           className="w-2/6 right-1"
           onPress={() => {
-            console.log("Recherche :", search);
+            refetch();
           }}
         >
           <Text>Chercher</Text>
