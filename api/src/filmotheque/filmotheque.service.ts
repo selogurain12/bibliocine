@@ -45,11 +45,8 @@ export class FilmothequeService {
 
   public async getAll(userId: string): Promise<ListResult<FilmothequeDto>> {
     const em = this.orm.em.fork();
-    const [entities, total] = await em.findAndCount(
-      Filmotheque,
-      { users: { id: { $in: [userId] } } },
-      { populate: ["users"] }
-    );
+    const qb = em.qb(Filmotheque).where({ users: { $some: {id: userId} } });
+    const [entities, total] = await qb.getResultAndCount();
     await em.populate(entities, ["users"]);
     return {
       data: await this.filmothequeMapper.entitiesToDtos(entities, em),
