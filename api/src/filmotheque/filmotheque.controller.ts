@@ -17,6 +17,7 @@ export class FilmothequeController {
   public handle() {
     return tsRestHandler(filmothequeContract, {
       createFilmotheque: async ({ params: parameters, body: dto }) => {
+        console.log("create controller")
         const filmotheque = await this.service.create(dto, parameters.userId);
         return { status: 201, body: filmotheque };
       },

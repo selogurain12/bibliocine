@@ -58,6 +58,7 @@ export class FilmothequeService {
     parameters: CreateFilmothequeDto,
     userId: string,
   ): Promise<FilmothequeDto> {
+    console.log(parameters)
     const em = this.orm.em.fork();
     await em.begin();
     try {
