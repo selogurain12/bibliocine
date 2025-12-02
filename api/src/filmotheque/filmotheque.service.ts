@@ -64,7 +64,6 @@ export class FilmothequeService {
     try {
       const repository = em.getRepository(User);
       const existingUser = await repository.findOne({ id: userId });
-      console.log(existingUser)
       if (!existingUser) {
         throw new TsRestException(filmothequeContract.createFilmotheque, {
           status: 404,
@@ -79,10 +78,10 @@ export class FilmothequeService {
         userId,
         em,
       );
-      console.log(item)
       await em.persistAndFlush(item);
       await em.commit();
       await em.populate(item, ["users"]);
+      console.log(item)
       return await this.filmothequeMapper.entityToDto(item, em);
     } catch (error) {
       await em.rollback();
