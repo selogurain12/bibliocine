@@ -79,7 +79,6 @@ export class FilmothequeService {
         em,
       );
       await em.persistAndFlush(item);
-      await em.commit();
       await em.populate(item, ["users"]);
       console.log(item)
       return await this.filmothequeMapper.entityToDto(item, em);
