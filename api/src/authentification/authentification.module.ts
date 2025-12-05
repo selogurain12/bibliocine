@@ -4,6 +4,7 @@ import { AuthGuard } from "./authentification.guard";
 import { AuthService } from "./authentification.service";
 import { AuthMapper } from "./authentification.mapper";
 import { AuthentificationController } from "./authentification.controller";
+import { StatModule } from "src/stat/stat.module";
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { AuthentificationController } from "./authentification.controller";
       global: true,
       secret: process.env.SECRET,
     }),
+    StatModule
   ],
   controllers: [AuthentificationController],
   providers: [AuthGuard, AuthService, AuthMapper],
