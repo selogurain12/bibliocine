@@ -2,13 +2,13 @@ import { z } from "zod";
 import { userSchema } from "./user.dto";
 
 export const createStastSchema = z.object({
-  user: z.lazy(() => userSchema),
   timeSeen: z.number().min(0),
   pagesRead: z.number().min(0),
 });
 
 export const statSchema = createStastSchema.extend({
   id: z.string().uuid(),
+  user: z.lazy(() => userSchema),
 });
 
 export const updateStatSchema = createStastSchema.partial();
@@ -22,8 +22,7 @@ export const allStatSchema = createStastSchema
     finishedBooks: z.number(),
     booksInProgress: z.number(),
     bibliotheque: z.number(),
-  })
-  .omit({ user: true });
+  });
 
 export type StatDto = z.infer<typeof statSchema>;
 export type CreateStatDto = z.infer<typeof createStastSchema>;

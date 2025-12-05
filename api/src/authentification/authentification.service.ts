@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import { EntityManager } from "@mikro-orm/postgresql";
@@ -11,19 +10,23 @@ import type {
 } from "../../../packages/src/dtos/user.dto";
 import { authContract } from "../../../packages/src/contracts/auth.contract";
 import { AuthMapper } from "./authentification.mapper";
+import { StatService } from "src/stat/stat.service";
 
 @Injectable()
 export class AuthService {
   public readonly em: EntityManager;
 
   private readonly mapper: AuthMapper;
+
+  private readonly statService: StatService;
   constructor(
     em: EntityManager,
-    configService: ConfigService,
     mapper: AuthMapper,
+    statService: StatService,
   ) {
     this.em = em;
     this.mapper = mapper;
+    this.statService = statService;
   }
 
   async register(createUserDto: CreateAccountDto) {
@@ -47,6 +50,8 @@ export class AuthService {
         newUser.email,
         `${newUser.firstName} ${newUser.lastName}`,
       );
+
+      this.statService.create(newUser.id, { timeSeen: 0, pagesRead: 0});
 
       return { token, user: this.mapper.entityToDto(newUser) };
     } catch (error: unknown) {
