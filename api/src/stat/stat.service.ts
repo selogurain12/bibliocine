@@ -61,33 +61,40 @@ export class StatService {
   }
 
   async create(userId: string, createStatDto: CreateStatDto): Promise<StatDto> {
-    const em = this.orm.em.fork();
-    await em.begin();
-    try {
-      const repository = em.getRepository(Stat);
-      const existingStat = await repository.findOne({ id: userId });
-      if (!existingStat) {
-        throw new ConflictException("This user have already stats");
-      }
-      const item = await this.statMapper.createDtoToEntity(
-        createStatDto,
-        userId,
-        em,
-      );
-      await em.persistAndFlush(item);
-      await em.commit();
-      await em.populate(item, ["user"]);
-      return await this.statMapper.entityToDto(item, userId, em);
-    } catch (error) {
-      await em.rollback();
+    console.log(createStatDto)
+  const em = this.orm.em.fork();
+  await em.begin();
 
-      const message =
-        error instanceof Error
-          ? error.message || "Stat creation failed"
-          : "Stat creation failed";
-      throw new InternalServerErrorException(message);
+  try {
+    const repository = em.getRepository(Stat);
+
+    // ✅ Vérifier si l'utilisateur a déjà une stat
+    const existingStat = await repository.findOne({ user: { id: userId } });
+
+    if (existingStat) {
+      throw new ConflictException("This user already has stats");
     }
+
+    // ✅ Créer la stat
+    const item = await this.statMapper.createDtoToEntity(
+      createStatDto,
+      userId,
+      em,
+    );
+
+    await em.persistAndFlush(item);
+    await em.commit();
+    await em.populate(item, ["user"]);
+
+    return await this.statMapper.entityToDto(item, userId, em);
+  } catch (error) {
+    await em.rollback();
+    throw new InternalServerErrorException(
+      error instanceof Error ? error.message : "Stat creation failed",
+    );
   }
+}
+
 
   async simpleStat(userId: string): Promise<StatDto> {
     const em = this.orm.em.fork();
