@@ -2,7 +2,7 @@ import { View, Image, ActivityIndicator, ScrollView } from "react-native";
 import { Text } from "../ui/text";
 import { client } from "utils/clients/client";
 import { queryKeys } from "../../../packages/src/query-client";
-import { SpeedDial } from "../ui/speed-dial/SpeedDial";
+import { SpeedDial } from "../ui/speed-dial/speed-dial";
 import { CreateBookInProgress } from "../book-in-progress/forms/create";
 import { AddInBibliotheque } from "../bibliotheque/forms/add-in-bibliotheque";
 import { useAuth } from "context/auth-context";

@@ -3,7 +3,7 @@ import { Text } from "../ui/text";
 import { client } from "utils/clients/client";
 import { queryKeys } from "../../../packages/src/query-client";
 import { Stars } from "../ui/stars";
-import { SpeedDial } from "../ui/speed-dial/SpeedDial";
+import { SpeedDial } from "../ui/speed-dial/speed-dial";
 import { queryClient } from "context/query-client";
 import { useAuth } from "context/auth-context";
 import { useToast } from "../ui/toast";
