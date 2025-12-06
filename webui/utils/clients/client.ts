@@ -36,7 +36,6 @@ export function createClient<Tcontract extends AppRouter>(contract: Tcontract) {
         "Content-Type": "application/json",
       };
       if (idToken) {
-        console.log("Using id token:", idToken);
         headers.Authorization = `Bearer ${idToken}`;
       }
       return await tsRestFetchApi({ ...args, headers });
