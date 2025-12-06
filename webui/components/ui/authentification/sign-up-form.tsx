@@ -17,13 +17,17 @@ import { queryKeys } from '../../../../packages/src/query-client';
 import { isFetchError } from '@ts-rest/react-query/v5';
 import { useToast } from '../toast';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from 'context/authContext';
+import { useAuth } from 'context/auth-context';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from 'App';
+
+type NavProp = NativeStackNavigationProp<RootStackParamList, "Register">;
 
 export function SignUpForm() {
   const { showToast } = useToast();
-  const navigation = useNavigation()
+  const navigation = useNavigation<NavProp>()
   const insets = useSafeAreaInsets();
-  const { setToken } = useAuth();
+  const { setToken, setUser } = useAuth();
 
   const form = useForm<CreateAccountDto>({
     resolver: zodResolver(createAccountSchema),
@@ -44,15 +48,14 @@ export function SignUpForm() {
       });
       form.reset();
       showToast("Compte créé avec succès !", 2000, "success");
-      console.log(body)
       setToken(body.token);
+      setUser(body.user);
       navigation.navigate("Movie");
       return;
     },
 
     onError: (error) => {
       if (isFetchError(error)) {
-        console.log(error)
         showToast(`Erreur lors de la création du compte : ${error.message}`, 4000, "error");
         return;
       }
@@ -66,7 +69,6 @@ export function SignUpForm() {
   }
 
   function onSubmit(data: CreateAccountDto) {
-    console.log("Form submitted ✅", data);
     mutate({body: data});
   }
 
@@ -187,12 +189,11 @@ export function SignUpForm() {
             </View>
             <Text className="text-center text-sm">
               Vous avez déjà un compte?{" "}
-              <Pressable onPress={() => { /* TODO: Navigate to sign in */ }}>
+              <Pressable onPress={() => navigation.navigate("Login")}>
                 <Text className="text-sm underline underline-offset-4">Se connecter</Text>
               </Pressable>
             </Text>
 
-            {/* Séparateur */}
             <View className="flex-row items-center">
               <Separator className="flex-1" />
               <Text className="text-muted-foreground px-4 text-sm">or</Text>
