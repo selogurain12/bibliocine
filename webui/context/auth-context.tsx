@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { localStorageBasePrefixVariable } from "../utils/local-storage-base-prefix-variable";
+import { UserDto } from "../../packages/src/dtos/user.dto";
 
 type AuthContextType = {
   token: string | null;
+  user: UserDto | null;
   setToken: (token: string) => Promise<void>;
-  clearToken: () => Promise<void>;
+  setUser: (user: UserDto | null) => Promise<void>;
+  clearAuth: () => Promise<void>;
   loading: boolean;
 };
 
@@ -14,22 +17,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [token, setTokenState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUserState] = useState<UserDto | null>(null);
 
   useEffect(() => {
-    const loadToken = async () => {
+    const loadAuth = async () => {
       try {
         const storedToken = await AsyncStorage.getItem(localStorageBasePrefixVariable("idToken"));
-        if (storedToken) {
-          setTokenState(storedToken);
-        }
+        const storedUser = await AsyncStorage.getItem(localStorageBasePrefixVariable("user"));
+
+        if (storedToken) setTokenState(storedToken);
+        if (storedUser) setUserState(JSON.parse(storedUser));
       } catch (error) {
-        console.error("Erreur lors du chargement du token :", error);
+        console.error("Erreur lors du chargement de l'auth :", error);
       } finally {
         setLoading(false);
       }
     };
-    loadToken();
+    loadAuth();
   }, []);
+
+  const setUser = async (newUser: UserDto | null) => {
+    if (newUser) {
+      await AsyncStorage.setItem(localStorageBasePrefixVariable("user"), JSON.stringify(newUser));
+      setUserState(newUser);
+    } else {
+      await AsyncStorage.removeItem(localStorageBasePrefixVariable("user"));
+      setUserState(null);
+    }
+  };
 
   const setToken = async (newToken: string) => {
     try {
@@ -40,17 +55,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const clearToken = async () => {
+  const clearAuth = async () => {
     try {
       await AsyncStorage.removeItem(localStorageBasePrefixVariable("idToken"));
+      await AsyncStorage.removeItem(localStorageBasePrefixVariable("user"));
       setTokenState(null);
+      setUserState(null);
     } catch (error) {
-      console.error("Erreur lors de la suppression du token :", error);
+      console.error("Erreur lors de la suppression de l'auth :", error);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ token, setToken, clearToken, loading }}>
+    <AuthContext.Provider value={{ token, setToken, clearAuth, loading, user, setUser }}>
       {children}
     </AuthContext.Provider>
   );
