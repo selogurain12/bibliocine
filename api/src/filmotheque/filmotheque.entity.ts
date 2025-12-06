@@ -19,6 +19,9 @@ export class Filmotheque {
   @Property({ type: "varchar" })
   public name: string;
 
+  @Property({ nullable: true })
+  public imageUrl: string | null;
+
   @Property({ type: "array" })
   public movies: string[] | undefined;
 
@@ -28,8 +31,10 @@ export class Filmotheque {
   public constructor(parameters: {
     name: string;
     movies: string[] | undefined;
+    imageUrl: string | null;
   }) {
     this.name = parameters.name;
     this.movies = parameters.movies;
+    this.imageUrl = parameters.imageUrl;
   }
 }

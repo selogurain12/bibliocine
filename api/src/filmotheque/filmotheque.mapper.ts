@@ -26,6 +26,7 @@ export class FilmothequeMapper {
     return {
       id: entity.id,
       name: entity.name,
+      imageBase64: entity.imageUrl,
       movies: entity.movies,
       users: this.userMapper.entitiesToDtos(users),
     };
@@ -41,23 +42,29 @@ export class FilmothequeMapper {
   }
 
   public async createDtoToEntity(
-    dto: CreateFilmothequeDto,
-    userId: string,
-    em: EntityManager,
-  ): Promise<Filmotheque> {
-    const usersEntity = await em
-      .getRepository(User)
-      .findOne({ id: { $eq: userId } });
-    if (!usersEntity) {
-      throw new HttpException("No user found", 404);
-    }
-    const result = new Filmotheque({
-      name: dto.name,
-      movies: dto.movies,
-    });
-    result.users.add(usersEntity);
-    return result;
+  dto: CreateFilmothequeDto & { imageUrl: string | null },
+  userId: string,
+  em: EntityManager,
+): Promise<Filmotheque> {
+  const usersEntity = await em
+    .getRepository(User)
+    .findOne({ id: { $eq: userId } });
+
+  if (!usersEntity) {
+    throw new HttpException("No user found", 404);
   }
+
+  const result = new Filmotheque({
+    name: dto.name,
+    movies: dto.movies,
+    imageUrl: dto.imageUrl ?? null,
+  });
+
+  result.users.add(usersEntity);
+
+  return result;
+}
+
 
   public async updateDtoToEntity(
     filmothequeId: string,

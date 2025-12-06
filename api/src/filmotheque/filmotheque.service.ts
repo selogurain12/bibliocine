@@ -11,6 +11,7 @@ import type { ListResult } from "../../../packages/src/dtos/list-result.dto";
 import { User } from "../user/user.entity";
 import { Filmotheque } from "./filmotheque.entity";
 import { FilmothequeMapper } from "./filmotheque.mapper";
+import { CloudinaryService } from "src/cloudinary/cloudinary.service";
 
 @Injectable()
 export class FilmothequeService {
@@ -18,9 +19,12 @@ export class FilmothequeService {
 
   private readonly filmothequeMapper: FilmothequeMapper;
 
-  public constructor(orm: MikroORM, filmothequeMapper: FilmothequeMapper) {
+  private readonly cloudinaryService: CloudinaryService;
+
+  public constructor(orm: MikroORM, filmothequeMapper: FilmothequeMapper, cloudinaryService: CloudinaryService) {
     this.orm = orm;
     this.filmothequeMapper = filmothequeMapper;
+    this.cloudinaryService = cloudinaryService;
   }
 
   public async get(id: string, userId: string): Promise<FilmothequeDto> {
@@ -72,8 +76,15 @@ export class FilmothequeService {
           },
         });
       }
+      let imageUrl: string | null = null;
+
+      if (parameters.imageBase64) {
+        const upload = await this.cloudinaryService.uploadBase64Image(parameters.imageBase64);
+        imageUrl = upload.secure_url;
+      }
+
       const item = await this.filmothequeMapper.createDtoToEntity(
-        parameters,
+        { ...parameters, imageUrl },
         userId,
         em,
       );

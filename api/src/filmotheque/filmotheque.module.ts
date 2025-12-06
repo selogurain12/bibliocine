@@ -5,11 +5,13 @@ import { Filmotheque } from "./filmotheque.entity";
 import { FilmothequeController } from "./filmotheque.controller";
 import { FilmothequeService } from "./filmotheque.service";
 import { FilmothequeMapper } from "./filmotheque.mapper";
+import { CloudinaryModule } from "src/cloudinary/cloudinary.module";
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([Filmotheque]),
     forwardRef(() => UserModule),
+    CloudinaryModule,
   ],
   controllers: [FilmothequeController],
   providers: [FilmothequeService, FilmothequeMapper],
