@@ -46,6 +46,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "^54.0.25",
+    "expo-camera": "^17.0.10",
+    "expo-image-picker": "^17.0.9",
     "expo-status-bar": "~3.0.8",
     "lucide-react-native": "^0.553.0",
     "nativewind": "latest",
