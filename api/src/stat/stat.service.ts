@@ -61,21 +61,18 @@ export class StatService {
   }
 
   async create(userId: string, createStatDto: CreateStatDto): Promise<StatDto> {
-    console.log(createStatDto)
   const em = this.orm.em.fork();
   await em.begin();
 
   try {
     const repository = em.getRepository(Stat);
 
-    // ✅ Vérifier si l'utilisateur a déjà une stat
     const existingStat = await repository.findOne({ user: { id: userId } });
 
     if (existingStat) {
       throw new ConflictException("This user already has stats");
     }
 
-    // ✅ Créer la stat
     const item = await this.statMapper.createDtoToEntity(
       createStatDto,
       userId,

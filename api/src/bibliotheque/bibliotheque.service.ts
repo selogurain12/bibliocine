@@ -149,7 +149,6 @@ export class BibliothequeService {
       await em.persistAndFlush(item);
       await em.commit();
       await em.populate(item, ["users"]);
-      console.log(item);
       return await this.bibliothequeMapper.entityToDto(item, em);
     } catch (error) {
       await em.rollback();

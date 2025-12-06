@@ -21,7 +21,6 @@ export class MovieController {
         return { status: 200, body: movie };
       },
       getAllMovies: async ({ params: parameters }) => {
-        console.log("salut")
         const movies = await this.service.searchMovie(parameters.search);
         return { status: 200, body: movies };
       },

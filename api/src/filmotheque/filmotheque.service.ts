@@ -58,7 +58,6 @@ export class FilmothequeService {
     parameters: CreateFilmothequeDto,
     userId: string,
   ): Promise<FilmothequeDto> {
-    console.log(parameters)
     const em = this.orm.em.fork();
     await em.begin();
     try {
@@ -81,7 +80,6 @@ export class FilmothequeService {
       await em.persistAndFlush(item);
       await em.commit();
       await em.populate(item, ["users"]);
-      console.log(item)
       return await this.filmothequeMapper.entityToDto(item, em);
     } catch (error) {
       await em.rollback();

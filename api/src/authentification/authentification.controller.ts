@@ -19,7 +19,6 @@ export class AuthentificationController {
         return { status: 200, body: token };
       },
       register: async ({ body: dto }) => {
-        console.log("Register DTO:", dto);
         const user = await this.service.register(dto);
         return { status: 201, body: user };
       },

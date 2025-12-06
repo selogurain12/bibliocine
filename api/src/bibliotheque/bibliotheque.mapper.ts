@@ -56,7 +56,6 @@ export class BibliothequeMapper {
       books: dto.books,
     });
     result.users.add(usersEntity);
-    console.log(usersEntity);
     return result;
   }
 
