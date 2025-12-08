@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
-import { Text } from "../ui/text";
-import { client } from "../../utils/clients/client";
-import { queryKeys } from "../../../packages/src/query-client";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../ui/toast";
 import { useNavigation } from "@react-navigation/native";
-import { BookDto } from "../../../packages/src/dtos/book.dto";
-import { FinishedBookDto } from "../../../packages/src/dtos/finishedBook.dto";
 import { FontAwesome } from "@expo/vector-icons";
 import { queryClient } from "context/query-client";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FinishedBookDto } from "../../../packages/src/dtos/finishedBook.dto";
+import { BookDto } from "../../../packages/src/dtos/book.dto";
+import { useToast } from "../ui/toast";
+import { queryKeys } from "../../../packages/src/query-client";
+import { Text } from "../ui/text";
+import { client } from "../../utils/clients/client";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "FinishedBook">;
 
@@ -35,28 +35,28 @@ export function FinishedBook() {
   });
 
   const { mutate: deleteBook } = client.finishedBook.deleteFinishedBook.useMutation({
-        onSuccess: () => {
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.finishedBook.getAllFinishedBooks({
-              pathParams: { userId: user?.id ?? "" },
-            }),
-          });
-          showToast("Livre supprimé de vos livres terminés", 2000, "success");
-        },
-        onError: (error) => {
-          if (isFetchError(error)) {
-            showToast(`Erreur: ${error.message}`, 2000, "error");
-          }
-        }
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.finishedBook.getAllFinishedBooks({
+          pathParams: { userId: user?.id ?? "" },
+        }),
       });
-  
-     function handleDelete(itemId: string) {
-        if (!user) {
-          showToast("Vous devez être connecté", 2000, "error");
-          return;
-        }
-        deleteBook({ params: { id: itemId, userId: user.id } });
+      showToast("Livre supprimé de vos livres terminés", 2000, "success");
+    },
+    onError: (error) => {
+      if (isFetchError(error)) {
+        showToast(`Erreur: ${error.message}`, 2000, "error");
       }
+    },
+  });
+
+  function handleDelete(itemId: string) {
+    if (!user) {
+      showToast("Vous devez être connecté", 2000, "error");
+      return;
+    }
+    deleteBook({ params: { id: itemId, userId: user.id } });
+  }
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -80,7 +80,7 @@ export function FinishedBook() {
       }
     };
 
-    fetchBooks();
+    void fetchBooks();
   }, [data, showToast]);
 
   if (!user) {
@@ -92,37 +92,41 @@ export function FinishedBook() {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  const renderBook = ({ item }: { item: BookDto }) =>{
+  const renderBook = ({ item }: { item: BookDto }) => {
     const finishedBook = data?.body.data.find(
-      (finished: FinishedBookDto) => finished.bookId === String(item.id)
+      (finished: FinishedBookDto) => finished.bookId === item.id
     );
     return (
-    <View className="flex-1 m-2 bg-white rounded-lg shadow p-2 border border-gray-200">
+      <View className="m-2 flex-1 rounded-lg border border-gray-200 bg-white p-2 shadow">
         <TouchableOpacity
           className="items-center"
-          onPress={() => navigation.navigate("BookDetail", { id: item.id })}
-        >
+          onPress={() => {
+            navigation.navigate("BookDetail", { id: item.id });
+          }}>
           <Image
-                        source={{ uri: item.imageLink }}
-                        style={{ width: 100, height: 150, borderRadius: 8 }}
-                        resizeMode="cover"
-                      />
-                      <Text className="mt-2 text-center" numberOfLines={2}>{item.title}</Text>
+            source={{ uri: item.imageLink }}
+            style={{ width: 100, height: 150, borderRadius: 8 }}
+            resizeMode="cover"
+          />
+          <Text className="mt-2 text-center" numberOfLines={2}>
+            {item.title}
+          </Text>
         </TouchableOpacity>
 
-        <View className="flex-row justify-center mt-2">
+        <View className="mt-2 flex-row justify-center">
           <TouchableOpacity
-            onPress={() => { if(finishedBook) {
-              handleDelete(finishedBook.id)
+            onPress={() => {
+              if (finishedBook) {
+                handleDelete(finishedBook.id);
+              }
             }}
-            }
-            className="p-2"
-          >
+            className="p-2">
             <FontAwesome name="trash" size={18} color="red" />
           </TouchableOpacity>
         </View>
       </View>
-  )}
+    );
+  };
 
   return (
     <View className="p-2">

@@ -1,15 +1,16 @@
-import { useState } from "react";
+/* eslint-disable max-len */
 import { View, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "App";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Text } from "../ui/text";
 import { queryKeys } from "../../../packages/src/query-client";
 import { client } from "../../utils/clients/client";
 import { BookDto } from "../../../packages/src/dtos/book.dto";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "App";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "Book">;
 
@@ -35,17 +36,20 @@ export function Books() {
 
     return (
       <TouchableOpacity
-        className="flex-1 m-2"
-        onPress={() => navigation.navigate("BookDetail", { id: item.id })}
-      >
-        <View className="flex-1 m-2">
-          <View className="flex-1 bg-white rounded-lg shadow items-center p-2 border border-gray-200">
+        className="m-2 flex-1"
+        onPress={() => {
+          navigation.navigate("BookDetail", { id: item.id });
+        }}>
+        <View className="m-2 flex-1">
+          <View className="flex-1 items-center rounded-lg border border-gray-200 bg-white p-2 shadow">
             <Image
               source={{ uri: imageUri }}
-              className="w-full aspect-[2/3] rounded-md"
+              className="aspect-[2/3] w-full rounded-md"
               resizeMode="cover"
             />
-            <Text className="mt-2 text-center" numberOfLines={2}>{item.title}</Text>
+            <Text className="mt-2 text-center" numberOfLines={2}>
+              {item.title}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -54,7 +58,7 @@ export function Books() {
 
   return (
     <View className="p-2">
-      <View className="flex-row items-center gap-2 mb-4">
+      <View className="mb-4 flex-row items-center gap-2">
         <Input
           className="w-4/6"
           placeholder="Titre du livre"
@@ -63,11 +67,10 @@ export function Books() {
         />
         <Button
           variant="outline"
-          className="w-2/6 right-1"
+          className="right-1 w-2/6"
           onPress={() => {
-            refetch();
-          }}
-        >
+            void refetch();
+          }}>
           <Text>Chercher</Text>
         </Button>
       </View>

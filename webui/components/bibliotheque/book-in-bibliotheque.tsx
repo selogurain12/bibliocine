@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
-import { Text } from "../ui/text";
-import { client } from "../../utils/clients/client";
-import { queryKeys } from "../../../packages/src/query-client";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../ui/toast";
 import { useNavigation } from "@react-navigation/native";
-import { BookDto } from "../../../packages/src/dtos/book.dto";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text } from "../ui/text";
+import { client } from "../../utils/clients/client";
+import { queryKeys } from "../../../packages/src/query-client";
+import { useToast } from "../ui/toast";
+import { BookDto } from "../../../packages/src/dtos/book.dto";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "BooksInBibliotheque">;
 
@@ -44,6 +44,7 @@ export function BookInBibliotheque({ id }: { id: string }) {
           );
           setBooksDetails(results);
         } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           showToast(`Erreur lors du chargement des livres: ${error}`, 2000, "error");
         } finally {
           setLoadingBooks(false);
@@ -51,7 +52,7 @@ export function BookInBibliotheque({ id }: { id: string }) {
       }
     };
 
-    fetchBooks();
+    void fetchBooks();
   }, [data, showToast]);
 
   if (!user) {
@@ -65,20 +66,23 @@ export function BookInBibliotheque({ id }: { id: string }) {
 
   const renderBook = ({ item }: { item: BookDto }) => (
     <TouchableOpacity
-        className="flex-1 m-2"
-        onPress={() => navigation.navigate("BookDetail", { id: item.id })}
-      >
-        <View className="flex-1 m-2">
-          <View className="flex-1 bg-white rounded-lg shadow items-center p-2 border border-gray-200">
-            <Image
-              source={{ uri: item.imageLink }}
-              className="w-full aspect-[2/3] rounded-md"
-              resizeMode="cover"
-            />
-            <Text className="mt-2 text-center" numberOfLines={2}>{item.title}</Text>
-          </View>
+      className="m-2 flex-1"
+      onPress={() => {
+        navigation.navigate("BookDetail", { id: item.id });
+      }}>
+      <View className="m-2 flex-1">
+        <View className="flex-1 items-center rounded-lg border border-gray-200 bg-white p-2 shadow">
+          <Image
+            source={{ uri: item.imageLink }}
+            className="aspect-[2/3] w-full rounded-md"
+            resizeMode="cover"
+          />
+          <Text className="mt-2 text-center" numberOfLines={2}>
+            {item.title}
+          </Text>
         </View>
-      </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 
   return (

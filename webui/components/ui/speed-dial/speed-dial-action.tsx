@@ -1,7 +1,7 @@
-import React from "react";
 import { TouchableOpacity } from "react-native";
-import { Text } from "../text";
+import React from "react";
 import { FontAwesome } from "@expo/vector-icons";
+import { Text } from "../text";
 
 type FontAwesomeIconName = React.ComponentProps<typeof FontAwesome>["name"];
 
@@ -15,8 +15,7 @@ export function SpeedDialAction({ icon, label, onPress }: SpeedDialActionProps) 
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="flex-row items-center bg-white rounded-full shadow p-2 mb-2"
-    >
+      className="mb-2 flex-row items-center rounded-full bg-white p-2 shadow">
       <FontAwesome name={icon} size={20} color="#000" />
       <Text className="ml-2">{label}</Text>
     </TouchableOpacity>

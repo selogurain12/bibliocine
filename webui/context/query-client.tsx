@@ -17,10 +17,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-export function getNextPageParameter(
-  lastPage: Option,
-  pages: Option[],
-): number | undefined {
+export function getNextPageParameter(lastPage: Option, pages: Option[]): number | undefined {
   const lastPageNumber = lastPage.body.total;
   const totalCurrentPages = pages
     .map((page) => page.body.data.length)
@@ -32,9 +29,6 @@ export function getNextPageParameter(
   return undefined;
 }
 
-export function getPreviousPageParameter(
-  firstPage: Option,
-  pages: Option[],
-): number | undefined {
+export function getPreviousPageParameter(firstPage: Option, pages: Option[]): number | undefined {
   return pages.length - 1;
 }

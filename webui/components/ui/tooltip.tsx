@@ -1,23 +1,24 @@
-import * as TooltipPrimitive from '@rn-primitives/tooltip';
-import * as React from 'react';
-import { Platform, StyleSheet } from 'react-native';
-import { FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
-import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens';
-import { NativeOnlyAnimatedView } from './native-only-animated-view';
-import { TextClassContext } from './text';
-import { cn } from 'lib/utils';
- 
+/* eslint-disable max-len */
+import { Platform, StyleSheet } from "react-native";
+import * as TooltipPrimitive from "@rn-primitives/tooltip";
+import * as React from "react";
+import { FadeInDown, FadeInUp, FadeOut } from "react-native-reanimated";
+import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens";
+import { cn } from "lib/utils";
+import { NativeOnlyAnimatedView } from "./native-only-animated-view";
+import { TextClassContext } from "./text";
+
 const Tooltip = TooltipPrimitive.Root;
- 
+
 const TooltipTrigger = TooltipPrimitive.Trigger;
- 
-const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
- 
+
+const FullWindowOverlay = Platform.OS === "ios" ? RNFullWindowOverlay : React.Fragment;
+
 function TooltipContent({
   className,
   sideOffset = 4,
   portalHost,
-  side = 'top',
+  side = "top",
   ...props
 }: TooltipPrimitive.ContentProps &
   React.RefAttributes<TooltipPrimitive.ContentRef> & {
@@ -29,7 +30,7 @@ function TooltipContent({
         <TooltipPrimitive.Overlay style={Platform.select({ native: StyleSheet.absoluteFill })}>
           <NativeOnlyAnimatedView
             entering={
-              side === 'top'
+              side === "top"
                 ? FadeInDown.withInitialValues({ transform: [{ translateY: 3 }] }).duration(150)
                 : FadeInUp.withInitialValues({ transform: [{ translateY: -5 }] })
             }
@@ -38,14 +39,14 @@ function TooltipContent({
               <TooltipPrimitive.Content
                 sideOffset={sideOffset}
                 className={cn(
-                  'bg-primary z-50 rounded-md px-3 py-2 sm:py-1.5',
+                  "z-50 rounded-md bg-primary px-3 py-2 sm:py-1.5",
                   Platform.select({
                     web: cn(
-                      'animate-in fade-in-0 zoom-in-95 origin-(--radix-tooltip-content-transform-origin) w-fit text-balance',
-                      side === 'bottom' && 'slide-in-from-top-2',
-                      side === 'left' && 'slide-in-from-right-2',
-                      side === 'right' && 'slide-in-from-left-2',
-                      side === 'top' && 'slide-in-from-bottom-2'
+                      "origin-(--radix-tooltip-content-transform-origin) w-fit text-balance animate-in fade-in-0 zoom-in-95",
+                      side === "bottom" && "slide-in-from-top-2",
+                      side === "left" && "slide-in-from-right-2",
+                      side === "right" && "slide-in-from-left-2",
+                      side === "top" && "slide-in-from-bottom-2"
                     ),
                   }),
                   className
@@ -60,5 +61,5 @@ function TooltipContent({
     </TooltipPrimitive.Portal>
   );
 }
- 
+
 export { Tooltip, TooltipContent, TooltipTrigger };

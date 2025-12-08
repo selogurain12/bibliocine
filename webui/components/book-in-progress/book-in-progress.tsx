@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
-import { Text } from "../ui/text";
-import { client } from "../../utils/clients/client";
-import { queryKeys } from "../../../packages/src/query-client";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../ui/toast";
 import { useNavigation } from "@react-navigation/native";
-import { BookDto } from "../../../packages/src/dtos/book.dto";
-import { BookInProgressDto } from "../../../packages/src/dtos/bookInProgress.dto";
 import { queryClient } from "context/query-client";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { FontAwesome } from "@expo/vector-icons";
-import { UpdateBookInProgress } from "./forms/update";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BookInProgressDto } from "../../../packages/src/dtos/bookInProgress.dto";
+import { BookDto } from "../../../packages/src/dtos/book.dto";
+import { useToast } from "../ui/toast";
+import { queryKeys } from "../../../packages/src/query-client";
+import { Text } from "../ui/text";
+import { client } from "../../utils/clients/client";
+import { UpdateBookInProgress } from "./forms/update";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "BookInProgress">;
 
@@ -27,7 +27,9 @@ export function BookInProgress() {
   const [booksDetails, setBooksDetails] = useState<BookDto[]>([]);
   const [loadingBooks, setLoadingBooks] = useState(true);
 
-  const [selectedBookInProgress, setSelectedBookInProgress] = useState<BookInProgressDto | null>(null);
+  const [selectedBookInProgress, setSelectedBookInProgress] = useState<BookInProgressDto | null>(
+    null
+  );
   const [selectedBook, setSelectedBook] = useState<BookDto | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
@@ -36,32 +38,32 @@ export function BookInProgress() {
       pathParams: { userId: user?.id ?? "" },
     }),
     queryData: { params: { userId: user?.id ?? "" } },
-    enabled: !!user
+    enabled: !!user,
   });
 
   const { mutate: deleteBook } = client.booksInProgress.deleteBookInProgress.useMutation({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.booksInProgress.getAllBooksInProgress({
-            pathParams: { userId: user?.id ?? "" },
-          }),
-        });
-        showToast("Livre supprimé de vos livres en cours", 2000, "success");
-      },
-      onError: (error) => {
-        if (isFetchError(error)) {
-          showToast(`Erreur: ${error.message}`, 2000, "error");
-        }
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.booksInProgress.getAllBooksInProgress({
+          pathParams: { userId: user?.id ?? "" },
+        }),
+      });
+      showToast("Livre supprimé de vos livres en cours", 2000, "success");
+    },
+    onError: (error) => {
+      if (isFetchError(error)) {
+        showToast(`Erreur: ${error.message}`, 2000, "error");
       }
-    });
+    },
+  });
 
-   function handleDelete(itemId: string) {
-      if (!user) {
-        showToast("Vous devez être connecté", 2000, "error");
-        return;
-      }
-      deleteBook({ params: { id: itemId, userId: user.id } });
+  function handleDelete(itemId: string) {
+    if (!user) {
+      showToast("Vous devez être connecté", 2000, "error");
+      return;
     }
+    deleteBook({ params: { id: itemId, userId: user.id } });
+  }
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -85,7 +87,7 @@ export function BookInProgress() {
       }
     };
 
-    fetchBooks();
+    void fetchBooks();
   }, [data, showToast]);
 
   if (!user) {
@@ -99,47 +101,51 @@ export function BookInProgress() {
 
   const renderBook = ({ item }: { item: BookDto }) => {
     const bookProgress = data?.body.data.find(
-      (bookprogress: BookInProgressDto) => bookprogress.bookId === String(item.id)
+      (bookprogress: BookInProgressDto) => bookprogress.bookId === item.id
     );
-    return(
-    <View className="flex-1 m-2 bg-white rounded-lg shadow p-2 border border-gray-200">
+    return (
+      <View className="m-2 flex-1 rounded-lg border border-gray-200 bg-white p-2 shadow">
         <TouchableOpacity
           className="items-center"
-          onPress={() => navigation.navigate("BookDetail", { id: item.id })}
-        >
+          onPress={() => {
+            navigation.navigate("BookDetail", { id: item.id });
+          }}>
           <Image
-                        source={{ uri: item.imageLink }}
-                        style={{ width: 100, height: 150, borderRadius: 8 }}
-                        resizeMode="cover"
-                      />
-                      <Text className="mt-2 text-center" numberOfLines={2}>{item.title}</Text>
+            source={{ uri: item.imageLink }}
+            style={{ width: 100, height: 150, borderRadius: 8 }}
+            resizeMode="cover"
+          />
+          <Text className="mt-2 text-center" numberOfLines={2}>
+            {item.title}
+          </Text>
         </TouchableOpacity>
 
-        <View className="flex-row justify-center mt-2">
+        <View className="mt-2 flex-row justify-center">
           <TouchableOpacity
             onPress={() => {
               if (bookProgress) {
                 setSelectedBookInProgress(bookProgress);
                 setEditModalVisible(true);
-                setSelectedBook(item)
+                setSelectedBook(item);
               }
             }}
-            className="p-2"
-          >
+            className="p-2">
             <FontAwesome name="pencil" size={18} color="black" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {if(bookProgress){
-              handleDelete(bookProgress.id )
-            }}}
-            className="p-2"
-          >
+            onPress={() => {
+              if (bookProgress) {
+                handleDelete(bookProgress.id);
+              }
+            }}
+            className="p-2">
             <FontAwesome name="trash" size={18} color="red" />
           </TouchableOpacity>
         </View>
       </View>
-  )}
+    );
+  };
 
   return (
     <View className="p-2">
@@ -155,7 +161,9 @@ export function BookInProgress() {
         <UpdateBookInProgress
           book={selectedBook}
           visible={editModalVisible}
-          onClose={() => setEditModalVisible(false)}
+          onClose={() => {
+            setEditModalVisible(false);
+          }}
           bookInProgress={selectedBookInProgress}
         />
       )}

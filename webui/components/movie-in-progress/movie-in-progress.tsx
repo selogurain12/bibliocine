@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
-import { Text } from "../ui/text";
-import { client } from "../../utils/clients/client";
-import { queryKeys } from "../../../packages/src/query-client";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../ui/toast";
 import { useNavigation } from "@react-navigation/native";
-import { MovieDto } from "../../../packages/src/dtos/movie.dto";
-import { MovieInProgressDto } from "../../../packages/src/dtos/movieInProgress.dto";
 import { FontAwesome } from "@expo/vector-icons";
 import { queryClient } from "context/query-client";
 import { isFetchError } from "@ts-rest/react-query/v5";
-import { UpdateMovieInProgress } from "./forms/update";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MovieInProgressDto } from "../../../packages/src/dtos/movieInProgress.dto";
+import { MovieDto } from "../../../packages/src/dtos/movie.dto";
+import { useToast } from "../ui/toast";
+import { queryKeys } from "../../../packages/src/query-client";
+import { Text } from "../ui/text";
+import { client } from "../../utils/clients/client";
+import { UpdateMovieInProgress } from "./forms/update";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "MovieInProgress">;
 
@@ -26,7 +26,9 @@ export function MovieInProgress() {
   const [moviesDetails, setMoviesDetails] = useState<MovieDto[]>([]);
   const [loadingMovies, setLoadingMovies] = useState(true);
 
-  const [selectedMovieInProgress, setSelectedMovieInProgress] = useState<MovieInProgressDto | null>(null);
+  const [selectedMovieInProgress, setSelectedMovieInProgress] = useState<MovieInProgressDto | null>(
+    null
+  );
   const [selectedMovie, setSelectedMovie] = useState<MovieDto | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
@@ -35,7 +37,7 @@ export function MovieInProgress() {
       pathParams: { userId: user?.id ?? "" },
     }),
     queryData: { params: { userId: user?.id ?? "" } },
-    enabled: !!user
+    enabled: !!user,
   });
 
   const { mutate: deleteMovie } = client.moviesInProgress.deleteMovieInProgress.useMutation({
@@ -51,7 +53,7 @@ export function MovieInProgress() {
       if (isFetchError(error)) {
         showToast(`Erreur: ${error.message}`, 2000, "error");
       }
-    }
+    },
   });
 
   function handleDelete(itemId: string) {
@@ -84,7 +86,7 @@ export function MovieInProgress() {
       }
     };
 
-    fetchMovies();
+    void fetchMovies();
   }, [data, showToast]);
 
   if (!user) {
@@ -102,11 +104,12 @@ export function MovieInProgress() {
     );
 
     return (
-      <View className="flex-1 m-2 bg-white rounded-lg shadow p-2 border border-gray-200">
+      <View className="m-2 flex-1 rounded-lg border border-gray-200 bg-white p-2 shadow">
         <TouchableOpacity
           className="items-center"
-          onPress={() => navigation.navigate("MovieDetail", { id: item.id })}
-        >
+          onPress={() => {
+            navigation.navigate("MovieDetail", { id: item.id });
+          }}>
           <Image
             source={{ uri: `https://image.tmdb.org/t/p/w200${item.posterPath}` }}
             style={{ width: 100, height: 150, borderRadius: 8 }}
@@ -116,26 +119,26 @@ export function MovieInProgress() {
           </Text>
         </TouchableOpacity>
 
-        <View className="flex-row justify-center mt-2">
+        <View className="mt-2 flex-row justify-center">
           <TouchableOpacity
             onPress={() => {
               if (movieProgress) {
                 setSelectedMovieInProgress(movieProgress);
                 setEditModalVisible(true);
-                setSelectedMovie(item)
+                setSelectedMovie(item);
               }
             }}
-            className="p-2"
-          >
+            className="p-2">
             <FontAwesome name="pencil" size={18} color="black" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {if(movieProgress){
-              handleDelete(movieProgress.id )
-            }}}
-            className="p-2"
-          >
+            onPress={() => {
+              if (movieProgress) {
+                handleDelete(movieProgress.id);
+              }
+            }}
+            className="p-2">
             <FontAwesome name="trash" size={18} color="red" />
           </TouchableOpacity>
         </View>
@@ -157,7 +160,9 @@ export function MovieInProgress() {
         <UpdateMovieInProgress
           movie={selectedMovie}
           visible={editModalVisible}
-          onClose={() => setEditModalVisible(false)}
+          onClose={() => {
+            setEditModalVisible(false);
+          }}
           movieInProgress={selectedMovieInProgress}
         />
       )}

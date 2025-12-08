@@ -1,17 +1,20 @@
-import React from "react";
 import { Modal, View, TouchableOpacity, Image } from "react-native";
-import { Text } from "../../ui/text";
-import { Label } from "../../ui/label";
+import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Input } from "../../ui/input";
-import { CreateMovieInProgressDto, createMovieInProgressSchema } from "../../../../packages/src/dtos/movieInProgress.dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "utils/clients/client";
 import { queryClient } from "context/query-client";
-import { queryKeys } from "../../../../packages/src/query-client";
-import { useToast } from "../../ui/toast";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { useAuth } from "context/auth-context";
+import { Text } from "../../ui/text";
+import { Label } from "../../ui/label";
+import { Input } from "../../ui/input";
+import {
+  CreateMovieInProgressDto,
+  createMovieInProgressSchema,
+} from "../../../../packages/src/dtos/movieInProgress.dto";
+import { queryKeys } from "../../../../packages/src/query-client";
+import { useToast } from "../../ui/toast";
 import { MovieDto } from "../../../../packages/src/dtos/movie.dto";
 
 type CreateMovieInProgressProps = {
@@ -27,7 +30,7 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
   const form = useForm<CreateMovieInProgressDto>({
     resolver: zodResolver(createMovieInProgressSchema),
     defaultValues: {
-      movieId: String(movie?.id) ?? "",
+      movieId: String(movie?.id ?? 0),
       viewingTime: 0,
     },
   });
@@ -47,74 +50,74 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
       onClose();
     },
     onError: (error) => {
+      showToast(`Erreur lors de l'ajout du film : ${error.body.message}`, 4000, "error");
+    },
+  });
+
+  const { data: stats } = client.stats.simpleStats.useQuery({
+    queryKey: queryKeys.stats.simpleStats({
+      pathParams: { userId: user.id },
+    }),
+    queryData: { params: { userId: user.id } },
+  });
+
+  const statsId = stats?.body.id ?? "";
+
+  const { mutate: updateStats } = client.stats.updateStats.useMutation({
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.stats.updateStats(),
+      });
+      form.reset();
+      showToast("Les stats ont bien été mise à jour !", 2000, "success");
+    },
+    onError: (error) => {
       if (isFetchError(error)) {
-        showToast(`Erreur lors de l'ajout du film : ${error.message}`, 4000, "error");
+        showToast(`Erreur lors de la modification des stats : ${error.message}`, 4000, "error");
       }
     },
   });
 
-  const { data: stats} = client.stats.simpleStats.useQuery({
-      queryKey: queryKeys.stats.simpleStats({
-        pathParams: { userId: user.id }
-      }),
-      queryData: { params: { userId: user.id }},
-    })
-
-  const statsId = stats?.body.id ?? "";
-  
-    const { mutate: updateStats } = client.stats.updateStats.useMutation({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.stats.updateStats(),
-        });
-        form.reset();
-        showToast("Les stats ont bien été mise à jour !", 2000, "success");
-      },
-      onError: (error) => {
-        if (isFetchError(error)) {
-          showToast(`Erreur lors de la modification des stats : ${error.message}`, 4000, "error");
-        }
-      },
-    });
-
-    const { mutate: finishedMovie } = client.finishedMovie.createFinishedMovie.useMutation({
-            onSuccess: () => {
-                void queryClient.invalidateQueries({
-                    queryKey: queryKeys.moviesInProgress.getAllMoviesInProgress(),
-                });
-                showToast("Film est marqué comme terminé !", 2000, "success");
-                onClose();
-            },
-            onError: (error) => {
-                console.error("Error marking movie as finished:", error);
-            },
-        });
+  const { mutate: finishedMovie } = client.finishedMovie.createFinishedMovie.useMutation({
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.moviesInProgress.getAllMoviesInProgress(),
+      });
+      showToast("Film est marqué comme terminé !", 2000, "success");
+      onClose();
+    },
+    onError: (error) => {
+      showToast(
+        `Erreur lors du marquage du film comme terminé : ${error.body.message}`,
+        4000,
+        "error"
+      );
+    },
+  });
 
   const imageUri = movie?.posterPath
     ? `https://image.tmdb.org/t/p/original/${movie.posterPath}`
     : "https://via.placeholder.com/100x150?text=No+Image";
-
-  console.log(form.formState.errors);
-
-  console.log(form.getValues());
-
   function onSubmit(data: CreateMovieInProgressDto) {
     if (!user) {
       showToast("Vous devez être connecté pour ajouter un film", 2000, "error");
       return;
     }
-    console.log("Movie:", data.movieId, "Viewing Time:", data.viewingTime);
 
-    if(movie !== null && movie !== undefined) {
-      if((movie.runtime ?? 0) <= 0) {
+    if (movie !== null) {
+      if ((movie.runtime ?? 0) <= 0) {
         showToast("Le temps de visionnage doit être supérieur à zéro.", 2000, "error");
         return;
       }
-      if(data.viewingTime > (movie.runtime ?? 0)) {
-        showToast("Le temps de visionnage ne peut pas dépasser la durée totale du film.", 2000, "error");
+      if (data.viewingTime > (movie.runtime ?? 0)) {
+        showToast(
+          "Le temps de visionnage ne peut pas dépasser la durée totale du film.",
+          2000,
+          "error"
+        );
         return;
       }
-      if(data.viewingTime === (movie.runtime ?? 0)) {
+      if (data.viewingTime === (movie.runtime ?? 0)) {
         finishedMovie({
           params: { userId: user.id },
           body: {
@@ -123,41 +126,41 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
         });
       } else {
         updateStats({
-      params: { userId: user.id, id: statsId },
-      body: {
-        timeSeen: data.viewingTime,
-      }
-    })
+          params: { userId: user.id, id: statsId },
+          body: {
+            timeSeen: data.viewingTime,
+          },
+        });
 
-    mutate({
-      params: { userId: user.id },
-      body: {
-        movieId: String(movie?.id) ?? "0",
-        viewingTime: data.viewingTime,
-      },
-    });
+        mutate({
+          params: { userId: user.id },
+          body: {
+            movieId: String(movie.id ?? 0),
+            viewingTime: data.viewingTime,
+          },
+        });
       }
     }
   }
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white p-6 rounded-lg w-3/4">
-          <Text className="text-lg font-bold mb-4">Film en cours</Text>
+      <View className="flex-1 items-center justify-center bg-black/50">
+        <View className="w-3/4 rounded-lg bg-white p-6">
+          <Text className="mb-4 text-lg font-bold">Film en cours</Text>
 
           {movie && (
-            <View className="items-center mb-4">
+            <View className="mb-4 items-center">
               <Image
                 source={{ uri: imageUri }}
-                className="w-32 h-48 rounded-md mb-2"
+                className="mb-2 h-48 w-32 rounded-md"
                 resizeMode="cover"
               />
               <Text className="text-md font-semibold">{movie.title}</Text>
             </View>
           )}
 
-          <View className="gap-1.5 mb-4">
+          <View className="mb-4 gap-1.5">
             <Label htmlFor="viewingTime">Temps vu</Label>
             <Controller
               control={form.control}
@@ -168,7 +171,9 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
                   placeholder="Temps vu en minutes"
                   keyboardType="numeric"
                   value={value ? String(value) : ""}
-                  onChangeText={(text) => onChange(Number(text))}
+                  onChangeText={(text) => {
+                    onChange(Number(text));
+                  }}
                   returnKeyType="done"
                 />
               )}
@@ -179,15 +184,14 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
           </View>
 
           <View className="flex-row justify-between">
-            <TouchableOpacity onPress={onClose} className="bg-gray-400 p-3 rounded-md flex-1 mr-2">
-              <Text className="text-white text-center">Fermer</Text>
+            <TouchableOpacity onPress={onClose} className="mr-2 flex-1 rounded-md bg-gray-400 p-3">
+              <Text className="text-center text-white">Fermer</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={form.handleSubmit(onSubmit)}
-              className="bg-blue-600 p-3 rounded-md flex-1 ml-2"
-            >
-              <Text className="text-white text-center">Ajouter</Text>
+              onPress={() => void form.handleSubmit(onSubmit)()}
+              className="ml-2 flex-1 rounded-md bg-blue-600 p-3">
+              <Text className="text-center text-white">Ajouter</Text>
             </TouchableOpacity>
           </View>
         </View>

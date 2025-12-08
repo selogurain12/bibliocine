@@ -26,14 +26,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const storedUser = await AsyncStorage.getItem(localStorageBasePrefixVariable("user"));
 
         if (storedToken) setTokenState(storedToken);
-        if (storedUser) setUserState(JSON.parse(storedUser));
+        if (storedUser) setUserState(JSON.parse(storedUser) as UserDto);
       } catch (error) {
         console.error("Erreur lors du chargement de l'auth :", error);
       } finally {
         setLoading(false);
       }
     };
-    loadAuth();
+    void loadAuth();
   }, []);
 
   const setUser = async (newUser: UserDto | null) => {

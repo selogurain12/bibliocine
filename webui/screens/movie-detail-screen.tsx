@@ -1,7 +1,7 @@
 import { MovieDetails } from "components/movie/movie-details";
-import { AppContent } from "./app-content";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "App";
+import { AppContent } from "./app-content";
 
 export function MovieDetailScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "MovieDetail">>();

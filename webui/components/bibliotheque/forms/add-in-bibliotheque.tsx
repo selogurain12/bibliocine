@@ -1,15 +1,15 @@
-import React, { useState } from "react";
 import { Modal, View, TouchableOpacity } from "react-native";
-import { Text } from "../../ui/text";
-import Select from "../../ui/select";
+import React, { useState } from "react";
 import { client } from "utils/clients/client";
-import { queryKeys } from "../../../../packages/src/query-client";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../../ui/toast";
-import { CreateBibliotheque } from "./create";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { queryClient } from "context/query-client";
+import { Text } from "../../ui/text";
+import Select from "../../ui/select";
+import { queryKeys } from "../../../../packages/src/query-client";
+import { useToast } from "../../ui/toast";
+import { CreateBibliotheque } from "./create";
 
 type AddInBibliothequeProps = {
   visible: boolean;
@@ -17,13 +17,11 @@ type AddInBibliothequeProps = {
   bookId: string;
 };
 
-export function AddInBibliotheque({
-  visible,
-  onClose,
-  bookId,
-}: AddInBibliothequeProps) {
+export function AddInBibliotheque({ visible, onClose, bookId }: AddInBibliothequeProps) {
   const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [selectedBibliotheque, setSelectedBibliotheque] = useState<{ id: string; name: string } | undefined>(undefined);
+  const [selectedBibliotheque, setSelectedBibliotheque] = useState<
+    { id: string; name: string } | undefined
+  >(undefined);
 
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -83,11 +81,10 @@ export function AddInBibliotheque({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View
-        className="flex-1 bg-black/50 justify-center items-center"
-        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-      >
-        <View className="bg-white p-6 rounded-lg w-3/4">
-          <Text className="text-lg font-bold mb-4">Choisir une bibliothèque</Text>
+        className="flex-1 items-center justify-center bg-black/50"
+        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <View className="w-3/4 rounded-lg bg-white p-6">
+          <Text className="mb-4 text-lg font-bold">Choisir une bibliothèque</Text>
 
           <Select
             options={bibliotheques.map((bibliotheque) => ({
@@ -98,36 +95,34 @@ export function AddInBibliotheque({
             value={selectedBibliotheque?.id}
             onValueChange={(value) => {
               const bibliotheque = bibliotheques.find((bibliotheque) => bibliotheque.id === value);
-              if (bibliotheque) setSelectedBibliotheque({ id: bibliotheque.id, name: bibliotheque.name });
+              if (bibliotheque)
+                setSelectedBibliotheque({ id: bibliotheque.id, name: bibliotheque.name });
             }}
           />
 
-          <TouchableOpacity
-            onPress={handleAddLivre}
-            className="bg-green-600 p-3 rounded-md mt-4"
-          >
-            <Text className="text-white text-center">Ajouter le livre</Text>
+          <TouchableOpacity onPress={handleAddLivre} className="mt-4 rounded-md bg-green-600 p-3">
+            <Text className="text-center text-white">Ajouter le livre</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setCreateModalVisible(true)}
-            className="bg-blue-600 p-3 rounded-md mt-4"
-          >
-            <Text className="text-white text-center">Créer une bibliothèque</Text>
+            onPress={() => {
+              setCreateModalVisible(true);
+            }}
+            className="mt-4 rounded-md bg-blue-600 p-3">
+            <Text className="text-center text-white">Créer une bibliothèque</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={onClose}
-            className="bg-red-500 p-3 rounded-md mt-4"
-          >
-            <Text className="text-white text-center">Fermer</Text>
+          <TouchableOpacity onPress={onClose} className="mt-4 rounded-md bg-red-500 p-3">
+            <Text className="text-center text-white">Fermer</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <CreateBibliotheque
         visible={createModalVisible}
-        onClose={() => setCreateModalVisible(false)}
+        onClose={() => {
+          setCreateModalVisible(false);
+        }}
       />
     </Modal>
   );

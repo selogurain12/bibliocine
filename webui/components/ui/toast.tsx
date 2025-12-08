@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useRef, ReactNode } from 'react';
-import { Animated, StyleSheet, Text } from 'react-native';
+/* eslint-disable no-unused-vars */
+import { Animated, StyleSheet, Text } from "react-native";
+import React, { createContext, useContext, useState, useRef, ReactNode } from "react";
 
-type ToastType = 'info' | 'success' | 'error';
+type ToastType = "info" | "success" | "error";
 
 interface ToastContextProps {
   showToast: (msg: string, duration?: number, type?: ToastType) => void;
@@ -14,12 +15,12 @@ interface ToastProviderProps {
 }
 
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
-  const [message, setMessage] = useState<string>('');
-  const [type, setType] = useState<ToastType>('info');
+  const [message, setMessage] = useState<string>("");
+  const [type, setType] = useState<ToastType>("info");
   const [visible, setVisible] = useState<boolean>(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const showToast = (msg: string, duration: number = 2000, toastType: ToastType = 'info') => {
+  const showToast = (msg: string, duration: number = 2000, toastType: ToastType = "info") => {
     setMessage(msg);
     setType(toastType);
     setVisible(true);
@@ -35,7 +36,9 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
-      }).start(() => setVisible(false));
+      }).start(() => {
+        setVisible(false);
+      });
     }, duration);
   };
 
@@ -54,32 +57,32 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
 export const useToast = (): ToastContextProps => {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
+    throw new Error("useToast must be used within a ToastProvider");
   }
   return context;
 };
 
 const styles = StyleSheet.create({
   toast: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 50,
     left: 20,
     right: 20,
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   text: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   info: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   success: {
-    backgroundColor: 'green',
+    backgroundColor: "green",
   },
   error: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
   },
 });

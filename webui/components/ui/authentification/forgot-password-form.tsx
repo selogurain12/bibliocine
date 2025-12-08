@@ -1,24 +1,18 @@
-import { Button } from '../button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../card';
-import { Input } from '../input';
-import { Label } from '../label';
-import { Text } from '../text';
-import { View } from 'react-native';
- 
+import { View } from "react-native";
+import { Button } from "../button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../card";
+import { Input } from "../input";
+import { Label } from "../label";
+import { Text } from "../text";
+
 export function ForgotPasswordForm() {
   function onSubmit() {
     // TODO: Submit form and navigate to reset password screen if successful
   }
- 
+
   return (
     <View className="gap-6">
-      <Card className="border-border/0 sm:border-border shadow-none sm:shadow-sm sm:shadow-black/5">
+      <Card className="border-border/0 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
         <CardHeader>
           <CardTitle className="text-center text-xl sm:text-left">Forgot password?</CardTitle>
           <CardDescription className="text-center sm:text-left">

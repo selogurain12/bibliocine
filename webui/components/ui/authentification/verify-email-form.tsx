@@ -1,31 +1,26 @@
-import { Button } from '../button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../card';
-import { Input } from '../input';
-import { Label } from '../label';
-import { Text } from '../text';
-import * as React from 'react';
-import { type TextStyle, View } from 'react-native';
- 
+/* eslint-disable max-len */
+import { type TextStyle, View } from "react-native";
+import * as React from "react";
+import { Button } from "../button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../card";
+import { Input } from "../input";
+import { Label } from "../label";
+import { Text } from "../text";
+
 const RESEND_CODE_INTERVAL_SECONDS = 30;
- 
-const TABULAR_NUMBERS_STYLE: TextStyle = { fontVariant: ['tabular-nums'] };
- 
+
+const TABULAR_NUMBERS_STYLE: TextStyle = { fontVariant: ["tabular-nums"] };
+
 export function VerifyEmailForm() {
   const { countdown, restartCountdown } = useCountdown(RESEND_CODE_INTERVAL_SECONDS);
- 
+
   function onSubmit() {
     // TODO: Submit form and navigate to protected screen if successful
   }
- 
+
   return (
     <View className="gap-6">
-      <Card className="border-border/0 sm:border-border pb-4 shadow-none sm:shadow-sm sm:shadow-black/5">
+      <Card className="border-border/0 pb-4 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
         <CardHeader>
           <CardTitle className="text-center text-xl sm:text-left">Verify your email</CardTitle>
           <CardDescription className="text-center sm:text-left">
@@ -54,7 +49,7 @@ export function VerifyEmailForm() {
                   restartCountdown();
                 }}>
                 <Text className="text-center text-xs">
-                  Didn&apos;t receive the code? Resend{' '}
+                  Didn&apos;t receive the code? Resend{" "}
                   {countdown > 0 ? (
                     <Text className="text-xs" style={TABULAR_NUMBERS_STYLE}>
                       ({countdown})
@@ -82,18 +77,18 @@ export function VerifyEmailForm() {
     </View>
   );
 }
- 
+
 function useCountdown(seconds = 30) {
   const [countdown, setCountdown] = React.useState(seconds);
   const intervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
- 
+
   const startCountdown = React.useCallback(() => {
     setCountdown(seconds);
- 
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
- 
+
     intervalRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -107,16 +102,16 @@ function useCountdown(seconds = 30) {
       });
     }, 1000);
   }, [seconds]);
- 
+
   React.useEffect(() => {
     startCountdown();
- 
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
   }, [startCountdown]);
- 
+
   return { countdown, restartCountdown: startCountdown };
 }

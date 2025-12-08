@@ -1,11 +1,11 @@
-import React from "react";
 import { View } from "react-native";
+import React from "react";
 import { FontAwesome } from "@expo/vector-icons";
 
 export function Stars({ rating }: { rating: number }) {
   const stars = [];
   const maxStars = 5;
-  const normalized = Math.round(rating / 2); 
+  const normalized = Math.round(rating / 2);
 
   for (let i = 1; i <= maxStars; i++) {
     stars.push(

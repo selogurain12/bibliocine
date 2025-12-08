@@ -5,7 +5,7 @@ import eslintPluginImport from "eslint-plugin-import";
 
 export default tseslint.config(
   {
-    ignores: ["node_modules", "dist", "build", ".vite", "out", "eslint.config.{js,cjs,mjs}"],
+    ignores: ["node_modules", "dist", "build", ".vite", "out", "eslint.config.{js,cjs,mjs}", "prettier.config.{js,cjs,mjs}", "./webui/utils/upload-image.ts"],
   },
   {
     files: ["**/*.{ts,tsx,js,jsx}"],

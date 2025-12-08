@@ -10,7 +10,6 @@ import { biblioCineContract } from "../../../packages/src/contracts/index.contra
 
 const apiUrl = "https://bibliocine.onrender.com";
 
-// Récupération du token depuis AsyncStorage
 async function getIdTokenAsync(): Promise<string | null> {
   try {
     return await AsyncStorage.getItem(localStorageBasePrefixVariable("idToken"));

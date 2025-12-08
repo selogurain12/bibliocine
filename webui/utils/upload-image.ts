@@ -1,5 +1,4 @@
 export async function uploadToCloudinary(base64: string) {
-
   const data = new FormData();
   data.append("file", `data:image/jpeg;base64,${base64}`);
   data.append("upload_preset", process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
@@ -12,10 +11,6 @@ export async function uploadToCloudinary(base64: string) {
       body: data,
     }
   );
-
-  console.log("Cloudinary upload response status:", res.status);
-
   const json = await res.json();
-  console.log("Cloudinary response:", json);
   return json.secure_url as string;
 }

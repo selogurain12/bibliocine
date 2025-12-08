@@ -1,26 +1,26 @@
-import { cn } from '../../lib/utils';
-import type { LucideIcon, LucideProps } from 'lucide-react-native';
-import { cssInterop } from 'nativewind';
- 
+import type { LucideIcon, LucideProps } from "lucide-react-native";
+import { cssInterop } from "nativewind";
+import { cn } from "../../lib/utils";
+
 type IconProps = LucideProps & {
   as: LucideIcon;
-  className?: string; // Add className as an optional property
+  className?: string;
 };
- 
+
 function IconImpl({ as: IconComponent, ...props }: IconProps) {
   return <IconComponent {...props} />;
 }
- 
+
 cssInterop(IconImpl, {
   className: {
-    target: 'style',
+    target: "style",
     nativeStyleToProp: {
-      height: 'size',
-      width: 'size',
+      height: "size",
+      width: "size",
     },
   },
 });
- 
+
 /**
  * A wrapper component for Lucide icons with Nativewind `className` support via `cssInterop`.
  *
@@ -45,11 +45,11 @@ function Icon({ as: IconComponent, className, size = 14, ...props }: IconProps) 
   return (
     <IconImpl
       as={IconComponent}
-      className={cn('text-foreground', className)}
+      className={cn("text-foreground", className)}
       size={size}
       {...props}
     />
   );
 }
- 
+
 export { Icon };

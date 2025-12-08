@@ -1,5 +1,5 @@
-import React from "react";
 import { ScrollView, TouchableOpacity, Text } from "react-native";
+import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
@@ -23,12 +23,11 @@ export default function DashboardPage() {
       {sections.map((section, idx) => (
         <TouchableOpacity
           key={idx}
-          className="p-4 rounded-lg mb-4 border"
-          onPress={() => navigation.navigate(section.route)}
-        >
-          <Text className="text-center text-lg font-semibold">
-            {section.name}
-          </Text>
+          className="mb-4 rounded-lg border p-4"
+          onPress={() => {
+            navigation.navigate(section.route);
+          }}>
+          <Text className="text-center text-lg font-semibold">{section.name}</Text>
         </TouchableOpacity>
       ))}
     </ScrollView>

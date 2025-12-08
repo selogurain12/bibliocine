@@ -1,32 +1,29 @@
-import React from "react";
 import { Modal, View, TouchableOpacity, Image } from "react-native";
-import { Text } from "../../ui/text";
-import { Label } from "../../ui/label";
-import { Input } from "../../ui/input";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  CreateFilmothequeDto,
-  createFilmothequeSchema,
-} from "../../../../packages/src/dtos/filmotheque.dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "utils/clients/client";
 import { queryClient } from "context/query-client";
-import { queryKeys } from "../../../../packages/src/query-client";
-import { useToast } from "../../ui/toast";
 import { useAuth } from "context/auth-context";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import * as ImagePicker from "expo-image-picker";
 import { uploadToCloudinary } from "utils/upload-image";
+import { useToast } from "../../ui/toast";
+import { queryKeys } from "../../../../packages/src/query-client";
+import {
+  CreateFilmothequeDto,
+  createFilmothequeSchema,
+} from "../../../../packages/src/dtos/filmotheque.dto";
+import { Input } from "../../ui/input";
+import { Text } from "../../ui/text";
+import { Label } from "../../ui/label";
 
 type CreateFilmothequeProps = {
   visible: boolean;
   onClose: () => void;
 };
 
-export function CreateFilmotheque({
-  visible,
-  onClose,
-}: CreateFilmothequeProps) {
+export function CreateFilmotheque({ visible, onClose }: CreateFilmothequeProps) {
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -39,6 +36,13 @@ export function CreateFilmotheque({
   });
 
   const image = form.watch("imageUrl");
+
+  useEffect(() => {
+    void (async () => {
+      await ImagePicker.requestCameraPermissionsAsync();
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    })();
+  }, []);
 
   if (!user) {
     showToast("Vous devez être connecté pour ajouter une filmothèque", 2000, "error");
@@ -54,7 +58,19 @@ export function CreateFilmotheque({
     });
 
     if (!result.canceled) {
-      form.setValue("imageUrl", result.assets[0].base64!);
+      form.setValue("imageUrl", result.assets[0].base64 ?? null);
+    }
+  };
+
+  const takePhoto = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      form.setValue("imageUrl", result.assets[0].base64 ?? null);
     }
   };
 
@@ -72,11 +88,7 @@ export function CreateFilmotheque({
     },
     onError: (error) => {
       if (isFetchError(error)) {
-        showToast(
-          `Erreur lors de la création : ${error.message}`,
-          4000,
-          "error"
-        );
+        showToast(`Erreur lors de la création : ${error.message}`, 4000, "error");
       }
     },
   });
@@ -89,7 +101,7 @@ export function CreateFilmotheque({
     if (data.imageUrl) {
       imageUrl = await uploadToCloudinary(data.imageUrl);
     }
-    console.log("Submitting data:", imageUrl);
+
     mutate({
       params: { userId: user.id },
       body: {
@@ -101,30 +113,31 @@ export function CreateFilmotheque({
   }
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white p-6 rounded-lg w-3/4">
-          <Text className="text-lg font-bold mb-4">Nouvelle filmothèque</Text>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View className="flex-1 items-center justify-center bg-black/50">
+        <View className="w-3/4 rounded-lg bg-white p-6">
+          <Text className="mb-4 text-lg font-bold">Nouvelle filmothèque</Text>
 
           {image && (
             <Image
               source={{ uri: `data:image/jpeg;base64,${image}` }}
-              className="w-32 h-32 rounded-lg self-center mb-4"
+              className="mb-4 h-32 w-32 self-center rounded-lg"
             />
           )}
+
           <TouchableOpacity
-            onPress={pickImage}
-            className="bg-purple-600 p-3 rounded-md mb-4"
-          >
-            <Text className="text-white text-center">Choisir une image</Text>
+            onPress={() => void pickImage()}
+            className="mb-2 rounded-md bg-purple-600 p-3">
+            <Text className="text-center text-white">Choisir une image</Text>
           </TouchableOpacity>
 
-          <View className="gap-1.5 mb-4">
+          <TouchableOpacity
+            onPress={() => void takePhoto()}
+            className="mb-4 rounded-md bg-green-600 p-3">
+            <Text className="text-center text-white">Prendre une photo</Text>
+          </TouchableOpacity>
+
+          <View className="mb-4 gap-1.5">
             <Label htmlFor="name">Nom de la filmothèque</Label>
             <Controller
               control={form.control}
@@ -140,27 +153,19 @@ export function CreateFilmotheque({
               )}
             />
             {form.formState.errors.name && (
-              <Text className="text-red-500">
-                {form.formState.errors.name.message}
-              </Text>
+              <Text className="text-red-500">{form.formState.errors.name.message}</Text>
             )}
           </View>
 
           <View className="flex-row justify-between">
-            <TouchableOpacity
-              onPress={onClose}
-              className="bg-gray-400 p-3 rounded-md flex-1 mr-2"
-            >
-              <Text className="text-white text-center">Fermer</Text>
+            <TouchableOpacity onPress={onClose} className="mr-2 flex-1 rounded-md bg-gray-400 p-3">
+              <Text className="text-center text-white">Fermer</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => form.handleSubmit(handleSubmit, (errors) => {
-                console.log("Form errors:", errors);
-              })()}
-              className="bg-blue-600 p-3 rounded-md flex-1 ml-2"
-            >
-              <Text className="text-white text-center">Ajouter</Text>
+              onPress={() => void form.handleSubmit(handleSubmit)()}
+              className="ml-2 flex-1 rounded-md bg-blue-600 p-3">
+              <Text className="text-center text-white">Ajouter</Text>
             </TouchableOpacity>
           </View>
         </View>

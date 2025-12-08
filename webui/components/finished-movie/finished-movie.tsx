@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
-import { Text } from "../ui/text";
-import { client } from "../../utils/clients/client";
-import { queryKeys } from "../../../packages/src/query-client";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../ui/toast";
 import { useNavigation } from "@react-navigation/native";
-import { MovieDto } from "../../../packages/src/dtos/movie.dto";
-import { FinishedMovieDto } from "../../../packages/src/dtos/finishedMovie.dto";
 import { FontAwesome } from "@expo/vector-icons";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { queryClient } from "context/query-client";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FinishedMovieDto } from "../../../packages/src/dtos/finishedMovie.dto";
+import { MovieDto } from "../../../packages/src/dtos/movie.dto";
+import { useToast } from "../ui/toast";
+import { queryKeys } from "../../../packages/src/query-client";
+import { Text } from "../ui/text";
+import { client } from "../../utils/clients/client";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "FinishedMovie">;
 
@@ -35,29 +35,29 @@ export function FinishedMovie() {
   });
 
   const { mutate: deleteMovie } = client.finishedMovie.deleteFinishedMovie.useMutation({
-      onSuccess: () => {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.finishedMovie.getAllFinishedMovies({
-            pathParams: { userId: user?.id ?? "" },
-          }),
-        });
-        showToast("Film supprimé de vos films terminés", 2000, "success");
-      },
-      onError: (error) => {
-        if (isFetchError(error)) {
-          showToast(`Erreur: ${error.message}`, 2000, "error");
-        }
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.finishedMovie.getAllFinishedMovies({
+          pathParams: { userId: user?.id ?? "" },
+        }),
+      });
+      showToast("Film supprimé de vos films terminés", 2000, "success");
+    },
+    onError: (error) => {
+      if (isFetchError(error)) {
+        showToast(`Erreur: ${error.message}`, 2000, "error");
       }
-    });
-  
-    function handleDelete(itemId: string) {
-      if (!user) {
-        showToast("Vous devez être connecté", 2000, "error");
-        return;
-      }
-      deleteMovie({ params: { id: itemId, userId: user.id } });
+    },
+  });
+
+  function handleDelete(itemId: string) {
+    if (!user) {
+      showToast("Vous devez être connecté", 2000, "error");
+      return;
     }
-  
+    deleteMovie({ params: { id: itemId, userId: user.id } });
+  }
+
   useEffect(() => {
     const fetchMovies = async () => {
       if (data?.body.data) {
@@ -80,7 +80,7 @@ export function FinishedMovie() {
       }
     };
 
-    fetchMovies();
+    void fetchMovies();
   }, [data, showToast]);
 
   if (!user) {
@@ -94,15 +94,16 @@ export function FinishedMovie() {
 
   const renderMovie = ({ item }: { item: MovieDto }) => {
     const finishedMovie = data?.body.data.find(
-      (finished: FinishedMovieDto) => finished.movieId === String(item.id)
+      (finished: FinishedMovieDto) => finished.movieId === item.id
     );
 
     return (
-      <View className="flex-1 m-2 bg-white rounded-lg shadow p-2 border border-gray-200">
+      <View className="m-2 flex-1 rounded-lg border border-gray-200 bg-white p-2 shadow">
         <TouchableOpacity
           className="items-center"
-          onPress={() => navigation.navigate("MovieDetail", { id: item.id })}
-        >
+          onPress={() => {
+            navigation.navigate("MovieDetail", { id: item.id });
+          }}>
           <Image
             source={{ uri: `https://image.tmdb.org/t/p/w200${item.posterPath}` }}
             style={{ width: 100, height: 150, borderRadius: 8 }}
@@ -112,13 +113,14 @@ export function FinishedMovie() {
           </Text>
         </TouchableOpacity>
 
-        <View className="flex-row justify-center mt-2">
+        <View className="mt-2 flex-row justify-center">
           <TouchableOpacity
-            onPress={() => {if(finishedMovie){
-              handleDelete(finishedMovie.id )
-            }}}
-            className="p-2"
-          >
+            onPress={() => {
+              if (finishedMovie) {
+                handleDelete(finishedMovie.id);
+              }
+            }}
+            className="p-2">
             <FontAwesome name="trash" size={18} color="red" />
           </TouchableOpacity>
         </View>

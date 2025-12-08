@@ -1,31 +1,32 @@
-import * as React from 'react';
-import { Pressable, TextInput, View } from 'react-native';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
-import { Input } from '../input';
-import { SocialConnections } from './social-connections';
-import { Label } from '../label';
-import { Button } from '../button';
-import { Text } from '../text';
-import { Separator } from '../separator';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+/* eslint-disable max-len */
+import { Pressable, TextInput, View } from "react-native";
+import * as React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
-import { CreateAccountDto, createAccountSchema } from '../../../../packages/src/dtos/user.dto';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { client } from 'utils/clients/client';
-import { queryClient } from 'context/query-client';
-import { queryKeys } from '../../../../packages/src/query-client';
-import { isFetchError } from '@ts-rest/react-query/v5';
-import { useToast } from '../toast';
-import { useNavigation } from '@react-navigation/native';
-import { useAuth } from 'context/auth-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from 'App';
+import { client } from "utils/clients/client";
+import { queryClient } from "context/query-client";
+import { isFetchError } from "@ts-rest/react-query/v5";
+import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "context/auth-context";
+import { RootStackParamList } from "App";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useToast } from "../toast";
+import { queryKeys } from "../../../../packages/src/query-client";
+import { CreateAccountDto, createAccountSchema } from "../../../../packages/src/dtos/user.dto";
+import { Separator } from "../separator";
+import { Text } from "../text";
+import { Button } from "../button";
+import { Label } from "../label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../card";
+import { Input } from "../input";
+import { SocialConnections } from "./social-connections";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "Register">;
 
 export function SignUpForm() {
   const { showToast } = useToast();
-  const navigation = useNavigation<NavProp>()
+  const navigation = useNavigation<NavProp>();
   const insets = useSafeAreaInsets();
   const { setToken, setUser } = useAuth();
 
@@ -38,7 +39,7 @@ export function SignUpForm() {
       username: "",
       password: "",
       avatarUrl: null,
-    }
+    },
   });
 
   const { mutate } = client.auth.register.useMutation({
@@ -48,8 +49,8 @@ export function SignUpForm() {
       });
       form.reset();
       showToast("Compte créé avec succès !", 2000, "success");
-      setToken(body.token);
-      setUser(body.user);
+      void setToken(body.token);
+      void setUser(body.user);
       navigation.navigate("Movie");
       return;
     },
@@ -69,13 +70,13 @@ export function SignUpForm() {
   }
 
   function onSubmit(data: CreateAccountDto) {
-    mutate({body: data});
+    mutate({ body: data });
   }
 
   return (
     <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <View className="gap-6">
-        <Card className="border-border/0 sm:border-border shadow-none sm:shadow-sm sm:shadow-black/5">
+        <Card className="border-border/0 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
           <CardHeader>
             <CardTitle className="text-center text-xl sm:text-left">Créer votre compte</CardTitle>
             <CardDescription className="text-center sm:text-left">
@@ -84,7 +85,6 @@ export function SignUpForm() {
           </CardHeader>
           <CardContent className="gap-6">
             <View className="gap-6">
-
               <View className="gap-1.5">
                 <Label htmlFor="firstName">Prénom</Label>
                 <Controller
@@ -101,7 +101,9 @@ export function SignUpForm() {
                     />
                   )}
                 />
-                {form.formState.errors.firstName && <Text className="text-red-500">{form.formState.errors.firstName.message}</Text>}
+                {form.formState.errors.firstName && (
+                  <Text className="text-red-500">{form.formState.errors.firstName.message}</Text>
+                )}
               </View>
 
               <View className="gap-1.5">
@@ -120,7 +122,9 @@ export function SignUpForm() {
                     />
                   )}
                 />
-                {form.formState.errors.lastName && <Text className="text-red-500">{form.formState.errors.lastName.message}</Text>}
+                {form.formState.errors.lastName && (
+                  <Text className="text-red-500">{form.formState.errors.lastName.message}</Text>
+                )}
               </View>
 
               <View className="gap-1.5">
@@ -141,7 +145,9 @@ export function SignUpForm() {
                     />
                   )}
                 />
-                {form.formState.errors.email && <Text className="text-red-500">{form.formState.errors.email.message}</Text>}
+                {form.formState.errors.email && (
+                  <Text className="text-red-500">{form.formState.errors.email.message}</Text>
+                )}
               </View>
 
               <View className="gap-1.5">
@@ -161,7 +167,9 @@ export function SignUpForm() {
                     />
                   )}
                 />
-                {form.formState.errors.username && <Text className="text-red-500">{form.formState.errors.username.message}</Text>}
+                {form.formState.errors.username && (
+                  <Text className="text-red-500">{form.formState.errors.username.message}</Text>
+                )}
               </View>
 
               <View className="gap-1.5">
@@ -180,23 +188,28 @@ export function SignUpForm() {
                     />
                   )}
                 />
-                {form.formState.errors.password && <Text className="text-red-500">{form.formState.errors.password.message}</Text>}
+                {form.formState.errors.password && (
+                  <Text className="text-red-500">{form.formState.errors.password.message}</Text>
+                )}
               </View>
 
-              <Button className="w-full" onPress={form.handleSubmit(onSubmit)}>
+              <Button className="w-full" onPress={() => void form.handleSubmit(onSubmit)()}>
                 <Text>Continue</Text>
               </Button>
             </View>
             <Text className="text-center text-sm">
               Vous avez déjà un compte?{" "}
-              <Pressable onPress={() => navigation.navigate("Login")}>
+              <Pressable
+                onPress={() => {
+                  navigation.navigate("Login");
+                }}>
                 <Text className="text-sm underline underline-offset-4">Se connecter</Text>
               </Pressable>
             </Text>
 
             <View className="flex-row items-center">
               <Separator className="flex-1" />
-              <Text className="text-muted-foreground px-4 text-sm">or</Text>
+              <Text className="px-4 text-sm text-muted-foreground">or</Text>
               <Separator className="flex-1" />
             </View>
 

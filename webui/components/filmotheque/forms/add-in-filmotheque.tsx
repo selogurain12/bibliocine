@@ -1,15 +1,15 @@
-import React, { useState } from "react";
 import { Modal, View, TouchableOpacity } from "react-native";
-import { Text } from "../../ui/text";
-import Select from "../../ui/select";
+import React, { useState } from "react";
 import { client } from "utils/clients/client";
-import { queryKeys } from "../../../../packages/src/query-client";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../../ui/toast";
-import { CreateFilmotheque } from "./create";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { queryClient } from "context/query-client";
+import { Text } from "../../ui/text";
+import Select from "../../ui/select";
+import { queryKeys } from "../../../../packages/src/query-client";
+import { useToast } from "../../ui/toast";
+import { CreateFilmotheque } from "./create";
 
 type AddInFilmothequeProps = {
   visible: boolean;
@@ -17,13 +17,11 @@ type AddInFilmothequeProps = {
   movieId: string;
 };
 
-export function AddInFilmotheque({
-  visible,
-  onClose,
-  movieId,
-}: AddInFilmothequeProps) {
+export function AddInFilmotheque({ visible, onClose, movieId }: AddInFilmothequeProps) {
   const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [selectedFilmotheque, setSelectedFilmotheque] = useState<{ id: string; name: string } | undefined>(undefined);
+  const [selectedFilmotheque, setSelectedFilmotheque] = useState<
+    { id: string; name: string } | undefined
+  >(undefined);
 
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -35,7 +33,7 @@ export function AddInFilmotheque({
   }
 
   const { mutate } = client.filmotheque.updateFilmotheque.useMutation({
-    onSuccess: ({ body }) => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: queryKeys.filmotheque.updateFilmotheque(),
       });
@@ -83,11 +81,10 @@ export function AddInFilmotheque({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View
-        className="flex-1 bg-black/50 justify-center items-center"
-        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-      >
-        <View className="bg-white p-6 rounded-lg w-3/4">
-          <Text className="text-lg font-bold mb-4">Choisir une filmothèque</Text>
+        className="flex-1 items-center justify-center bg-black/50"
+        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <View className="w-3/4 rounded-lg bg-white p-6">
+          <Text className="mb-4 text-lg font-bold">Choisir une filmothèque</Text>
 
           <Select
             options={filmotheques.map((filmotheque) => ({
@@ -102,32 +99,29 @@ export function AddInFilmotheque({
             }}
           />
 
-          <TouchableOpacity
-            onPress={handleAddFilm}
-            className="bg-green-600 p-3 rounded-md mt-4"
-          >
-            <Text className="text-white text-center">Ajouter le film</Text>
+          <TouchableOpacity onPress={handleAddFilm} className="mt-4 rounded-md bg-green-600 p-3">
+            <Text className="text-center text-white">Ajouter le film</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setCreateModalVisible(true)}
-            className="bg-blue-600 p-3 rounded-md mt-4"
-          >
-            <Text className="text-white text-center">Créer une filmothèque</Text>
+            onPress={() => {
+              setCreateModalVisible(true);
+            }}
+            className="mt-4 rounded-md bg-blue-600 p-3">
+            <Text className="text-center text-white">Créer une filmothèque</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={onClose}
-            className="bg-red-500 p-3 rounded-md mt-4"
-          >
-            <Text className="text-white text-center">Fermer</Text>
+          <TouchableOpacity onPress={onClose} className="mt-4 rounded-md bg-red-500 p-3">
+            <Text className="text-center text-white">Fermer</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <CreateFilmotheque
         visible={createModalVisible}
-        onClose={() => setCreateModalVisible(false)}
+        onClose={() => {
+          setCreateModalVisible(false);
+        }}
       />
     </Modal>
   );

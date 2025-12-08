@@ -1,25 +1,26 @@
-import * as React from "react";
+/* eslint-disable max-len */
 import { Pressable, TextInput, View } from "react-native";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../card";
-import { Input } from "../input";
-import { SocialConnections } from "./social-connections";
-import { Label } from "../label";
-import { Button } from "../button";
-import { Text } from "../text";
-import { Separator } from "../separator";
+import * as React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "utils/clients/client";
 import { queryClient } from "context/query-client";
-import { queryKeys } from "../../../../packages/src/query-client";
 import { isFetchError } from "@ts-rest/react-query/v5";
-import { useToast } from "../toast";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "context/auth-context";
-import { LoginDto, loginSchema } from "../../../../packages/src/dtos/user.dto";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
+import { LoginDto, loginSchema } from "../../../../packages/src/dtos/user.dto";
+import { useToast } from "../toast";
+import { queryKeys } from "../../../../packages/src/query-client";
+import { Separator } from "../separator";
+import { Text } from "../text";
+import { Button } from "../button";
+import { Label } from "../label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../card";
+import { Input } from "../input";
+import { SocialConnections } from "./social-connections";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
@@ -44,8 +45,8 @@ export function SignInForm() {
       });
       form.reset();
       showToast("Connexion réussie ✅", 2000, "success");
-      setToken(body.token);
-      setUser(body.user);
+      void setToken(body.token);
+      void setUser(body.user);
       navigation.navigate("Movie");
     },
     onError: (error) => {
@@ -68,7 +69,7 @@ export function SignInForm() {
   return (
     <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <View className="gap-6">
-        <Card className="border-border/0 sm:border-border shadow-none sm:shadow-sm sm:shadow-black/5">
+        <Card className="border-border/0 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
           <CardHeader>
             <CardTitle className="text-center text-xl sm:text-left">Connexion</CardTitle>
             <CardDescription className="text-center sm:text-left">
@@ -115,7 +116,7 @@ export function SignInForm() {
                       value={value}
                       onChangeText={onChange}
                       returnKeyType="send"
-                      onSubmitEditing={form.handleSubmit(onSubmit)}
+                      onSubmitEditing={() => void form.handleSubmit(onSubmit)()}
                     />
                   )}
                 />
@@ -124,21 +125,24 @@ export function SignInForm() {
                 )}
               </View>
 
-              <Button className="w-full" onPress={form.handleSubmit(onSubmit)}>
+              <Button className="w-full" onPress={() => void form.handleSubmit(onSubmit)()}>
                 <Text>Continuer</Text>
               </Button>
             </View>
 
             <Text className="text-center text-sm">
               Pas encore de compte ?{" "}
-              <Pressable onPress={() => navigation.navigate("Register")}>
+              <Pressable
+                onPress={() => {
+                  navigation.navigate("Register");
+                }}>
                 <Text className="text-sm underline underline-offset-4">Créer un compte</Text>
               </Pressable>
             </Text>
 
             <View className="flex-row items-center">
               <Separator className="flex-1" />
-              <Text className="text-muted-foreground px-4 text-sm">ou</Text>
+              <Text className="px-4 text-sm text-muted-foreground">ou</Text>
               <Separator className="flex-1" />
             </View>
 

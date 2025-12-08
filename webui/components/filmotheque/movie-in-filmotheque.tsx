@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
-import { Text } from "../ui/text";
-import { client } from "../../utils/clients/client";
-import { queryKeys } from "../../../packages/src/query-client";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth-context";
-import { useToast } from "../ui/toast";
 import { useNavigation } from "@react-navigation/native";
-import { MovieDto } from "../../../packages/src/dtos/movie.dto";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text } from "../ui/text";
+import { client } from "../../utils/clients/client";
+import { queryKeys } from "../../../packages/src/query-client";
+import { useToast } from "../ui/toast";
+import { MovieDto } from "../../../packages/src/dtos/movie.dto";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "MoviesInFilmotheque">;
 
@@ -27,7 +27,7 @@ export function MovieInFilmotheque({ id }: { id: string }) {
       pathParams: { id, userId: user?.id ?? "" },
     }),
     queryData: { params: { userId: user?.id ?? "", id } },
-    enabled: !!user
+    enabled: !!user,
   });
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function MovieInFilmotheque({ id }: { id: string }) {
       }
     };
 
-    fetchMovies();
+    void fetchMovies();
   }, [data, showToast]);
 
   if (!user) {
@@ -66,10 +66,11 @@ export function MovieInFilmotheque({ id }: { id: string }) {
 
   const renderMovie = ({ item }: { item: MovieDto }) => (
     <TouchableOpacity
-      className="flex-1 m-2"
-      onPress={() => navigation.navigate("MovieDetail", { id: item.id })}
-    >
-      <View className="bg-white rounded-lg shadow items-center p-2 border border-gray-200">
+      className="m-2 flex-1"
+      onPress={() => {
+        navigation.navigate("MovieDetail", { id: item.id });
+      }}>
+      <View className="items-center rounded-lg border border-gray-200 bg-white p-2 shadow">
         <Image
           source={{ uri: `https://image.tmdb.org/t/p/w200${item.posterPath}` }}
           style={{ width: 100, height: 150, borderRadius: 8 }}
