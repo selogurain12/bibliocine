@@ -88,6 +88,7 @@ export class FilmothequeMapper {
     }
     em.assign(entity, {
       name: dto.name,
+      imageUrl: dto.imageUrl,
       movies: [...(entity.movies ?? []), ...(dto.movies ?? [])],
     });
     entity.users.add(userEntities);

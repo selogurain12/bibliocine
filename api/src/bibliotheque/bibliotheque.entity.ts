@@ -17,6 +17,9 @@ export class Bibliotheque {
   @Property({ type: "varchar" })
   public name: string;
 
+  @Property({ nullable: true })
+  public imageUrl: string | null;
+
   @Property({ type: "array" })
   public books: string[] | undefined;
 
@@ -26,8 +29,10 @@ export class Bibliotheque {
   public constructor(parameters: {
     name: string;
     books: string[] | undefined;
+    imageUrl: string | null;
   }) {
     this.name = parameters.name;
     this.books = parameters.books;
+    this.imageUrl = parameters.imageUrl;
   }
 }

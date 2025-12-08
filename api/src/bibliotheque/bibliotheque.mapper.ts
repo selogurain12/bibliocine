@@ -26,6 +26,7 @@ export class BibliothequeMapper {
     return {
       id: entity.id,
       name: entity.name,
+      imageUrl: entity.imageUrl,
       books: entity.books,
       users: this.userMapper.entitiesToDtos(users),
     };
@@ -54,6 +55,7 @@ export class BibliothequeMapper {
     const result = new Bibliotheque({
       name: dto.name,
       books: dto.books,
+      imageUrl: dto.imageUrl ?? null,
     });
     result.users.add(usersEntity);
     return result;
@@ -83,6 +85,7 @@ export class BibliothequeMapper {
     }
     em.assign(entity, {
       name: dto.name,
+      imageUrl: dto.imageUrl,
       books: [...(entity.books ?? []), ...(dto.books ?? [])],
     });
     entity.users.add(userEntities);

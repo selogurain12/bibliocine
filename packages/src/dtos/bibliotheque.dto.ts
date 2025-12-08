@@ -4,6 +4,7 @@ import { userSchema } from "./user.dto";
 export const createBibliothequeSchema = z.object({
   name: z.string().min(1).max(100),
   books: z.array(z.string()).optional(),
+  imageUrl: z.string().nullable(),
 });
 
 export const bibliothequeSchema = createBibliothequeSchema.extend({
