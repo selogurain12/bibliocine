@@ -154,21 +154,26 @@ export function UpdateBookInProgress({
           params: { id: bookInProgress.id, userId: user.id },
         });
       } else {
-        updateStats({
-          params: { userId: user.id, id: statsId },
-          body: {
-            pagesRead:
-              (data.currentPage ?? bookInProgress.currentPage) - bookInProgress.currentPage,
+        mutate(
+          {
+            params: { id: bookInProgress.id, userId: user.id },
+            body: {
+              bookId: bookInProgress.bookId,
+              currentPage: data.currentPage,
+            },
           },
-        });
-
-        mutate({
-          params: { id: bookInProgress.id, userId: user.id },
-          body: {
-            bookId: bookInProgress.bookId,
-            currentPage: data.currentPage,
-          },
-        });
+          {
+            onSuccess: () => {
+              updateStats({
+                params: { userId: user.id, id: statsId },
+                body: {
+                  pagesRead:
+                    (data.currentPage ?? bookInProgress.currentPage) - bookInProgress.currentPage,
+                },
+              });
+            },
+          }
+        );
       }
     }
   }

@@ -98,6 +98,7 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
   const imageUri = movie?.posterPath
     ? `https://image.tmdb.org/t/p/original/${movie.posterPath}`
     : "https://via.placeholder.com/100x150?text=No+Image";
+
   function onSubmit(data: CreateMovieInProgressDto) {
     if (!user) {
       showToast("Vous devez être connecté pour ajouter un film", 2000, "error");
@@ -125,20 +126,26 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
           },
         });
       } else {
-        updateStats({
-          params: { userId: user.id, id: statsId },
-          body: {
-            timeSeen: data.viewingTime,
+        mutate(
+          {
+            params: { userId: user.id },
+            body: {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
+              movieId: String(movie.id),
+              viewingTime: data.viewingTime,
+            },
           },
-        });
-
-        mutate({
-          params: { userId: user.id },
-          body: {
-            movieId: String(movie.id ?? 0),
-            viewingTime: data.viewingTime,
-          },
-        });
+          {
+            onSuccess: () => {
+              updateStats({
+                params: { userId: user.id, id: statsId },
+                body: {
+                  timeSeen: data.viewingTime,
+                },
+              });
+            },
+          }
+        );
       }
     }
   }

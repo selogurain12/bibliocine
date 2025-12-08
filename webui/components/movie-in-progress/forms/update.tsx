@@ -158,21 +158,26 @@ export function UpdateMovieInProgress({
           params: { id: movieInProgress.id, userId: user.id },
         });
       } else {
-        updateStats({
-          params: { userId: user.id, id: statsId },
-          body: {
-            timeSeen:
-              (data.viewingTime ?? movieInProgress.viewingTime) - movieInProgress.viewingTime,
+        mutate(
+          {
+            params: { id: movieInProgress.id, userId: user.id },
+            body: {
+              movieId: movieInProgress.movieId,
+              viewingTime: data.viewingTime,
+            },
           },
-        });
-
-        mutate({
-          params: { id: movieInProgress.id, userId: user.id },
-          body: {
-            movieId: movieInProgress.movieId,
-            viewingTime: data.viewingTime,
-          },
-        });
+          {
+            onSuccess: () => {
+              updateStats({
+                params: { userId: user.id, id: statsId },
+                body: {
+                  timeSeen:
+                    (data.viewingTime ?? movieInProgress.viewingTime) - movieInProgress.viewingTime,
+                },
+              });
+            },
+          }
+        );
       }
     }
   }

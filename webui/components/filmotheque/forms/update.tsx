@@ -1,5 +1,5 @@
 import { Modal, View, TouchableOpacity, Image } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "utils/clients/client";
@@ -26,6 +26,7 @@ type UpdateFilmothequeProps = {
 };
 
 export function UpdateFilmotheque({ filmotheque, visible, onClose }: UpdateFilmothequeProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -109,6 +110,9 @@ export function UpdateFilmotheque({ filmotheque, visible, onClose }: UpdateFilmo
       showToast("Vous devez être connecté pour modifier une filmothèque", 2000, "error");
       return;
     }
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
 
     let imageUrl = filmotheque.imageUrl;
 
@@ -116,14 +120,21 @@ export function UpdateFilmotheque({ filmotheque, visible, onClose }: UpdateFilmo
       imageUrl = await uploadToCloudinary(data.imageUrl);
     }
 
-    mutate({
-      params: { id: filmotheque.id, userId: user.id },
-      body: {
-        name: data.name,
-        imageUrl,
-        movies: filmotheque.movies,
+    mutate(
+      {
+        params: { id: filmotheque.id, userId: user.id },
+        body: {
+          name: data.name,
+          imageUrl,
+          movies: filmotheque.movies,
+        },
       },
-    });
+      {
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   }
 
   return (

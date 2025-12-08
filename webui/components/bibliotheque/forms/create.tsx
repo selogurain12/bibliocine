@@ -1,5 +1,5 @@
 import { Modal, View, TouchableOpacity, Image } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "utils/clients/client";
@@ -24,6 +24,7 @@ type CreateBibliothequeProps = {
 };
 
 export function CreateBibliotheque({ visible, onClose }: CreateBibliothequeProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -97,6 +98,9 @@ export function CreateBibliotheque({ visible, onClose }: CreateBibliothequeProps
       showToast("Vous devez être connecté pour ajouter un film", 2000, "error");
       return;
     }
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
 
     let imageUrl: string | null = null;
 
@@ -104,14 +108,21 @@ export function CreateBibliotheque({ visible, onClose }: CreateBibliothequeProps
       imageUrl = await uploadToCloudinary(data.imageUrl);
     }
 
-    mutate({
-      params: { userId: user.id },
-      body: {
-        name: data.name,
-        books: [],
-        imageUrl,
+    mutate(
+      {
+        params: { userId: user.id },
+        body: {
+          name: data.name,
+          books: [],
+          imageUrl,
+        },
       },
-    });
+      {
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   }
 
   return (

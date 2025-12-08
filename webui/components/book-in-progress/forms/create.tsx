@@ -121,19 +121,25 @@ export function CreateBookInProgress({ visible, onClose, book }: CreateBookInPro
           },
         });
       } else {
-        updateStats({
-          params: { userId: user.id, id: statsId },
-          body: {
-            pagesRead: data.currentPage,
+        mutate(
+          {
+            params: { userId: user.id },
+            body: {
+              bookId: book.id,
+              currentPage: data.currentPage,
+            },
           },
-        });
-        mutate({
-          params: { userId: user.id },
-          body: {
-            bookId: book.id,
-            currentPage: data.currentPage,
-          },
-        });
+          {
+            onSuccess: () => {
+              updateStats({
+                params: { userId: user.id, id: statsId },
+                body: {
+                  pagesRead: data.currentPage,
+                },
+              });
+            },
+          }
+        );
       }
     }
   }

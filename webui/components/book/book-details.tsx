@@ -15,6 +15,7 @@ import { useToast } from "../ui/toast";
 export function BookDetails({ id }: { id: string }) {
   const [isModalBookInProgressVisible, setModalBookInProgressVisible] = useState(false);
   const [isModalListBibliothequeVisible, setModalListBibliothequeVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -72,22 +73,28 @@ export function BookDetails({ id }: { id: string }) {
   const imageUri = item?.imageLink ?? "https://via.placeholder.com/100x150?text=No+Image";
 
   function markAsFinished() {
-    if (user) {
-      updateStats({
-        params: { userId: user.id, id: statsId },
-        body: {
-          pagesRead: item?.pageCount,
-        },
-      });
-      mutate({
+    if (!user || isSubmitting) return;
+
+    setIsSubmitting(true);
+    mutate(
+      {
         params: { userId: user.id },
         body: {
           bookId: String(item?.id),
         },
-      });
-    } else {
-      console.error("User not authenticated");
-    }
+      },
+      {
+        onSuccess: () => {
+          updateStats({
+            params: { userId: user.id, id: statsId },
+            body: { pagesRead: item?.pageCount },
+          });
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   }
   return (
     <View>

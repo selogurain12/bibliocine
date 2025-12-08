@@ -1,5 +1,5 @@
 import { Modal, View, TouchableOpacity, Image } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "utils/clients/client";
@@ -26,6 +26,7 @@ type UpdateBibliothequeProps = {
 };
 
 export function UpdateBibliotheque({ bibliotheque, visible, onClose }: UpdateBibliothequeProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -108,6 +109,9 @@ export function UpdateBibliotheque({ bibliotheque, visible, onClose }: UpdateBib
       showToast("Vous devez être connecté pour modifier une bibliothèque", 2000, "error");
       return;
     }
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
 
     let imageUrl = bibliotheque.imageUrl;
 
@@ -115,14 +119,21 @@ export function UpdateBibliotheque({ bibliotheque, visible, onClose }: UpdateBib
       imageUrl = await uploadToCloudinary(data.imageUrl);
     }
 
-    mutate({
-      params: { id: bibliotheque.id, userId: user.id },
-      body: {
-        name: data.name,
-        imageUrl,
-        books: bibliotheque.books,
+    mutate(
+      {
+        params: { id: bibliotheque.id, userId: user.id },
+        body: {
+          name: data.name,
+          imageUrl,
+          books: bibliotheque.books,
+        },
       },
-    });
+      {
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   }
 
   return (

@@ -1,5 +1,5 @@
 import { Modal, View, TouchableOpacity, Image } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "utils/clients/client";
@@ -24,6 +24,7 @@ type CreateFilmothequeProps = {
 };
 
 export function CreateFilmotheque({ visible, onClose }: CreateFilmothequeProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -94,7 +95,9 @@ export function CreateFilmotheque({ visible, onClose }: CreateFilmothequeProps) 
   });
 
   async function handleSubmit(data: CreateFilmothequeDto) {
-    if (!user) return;
+    if (!user || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     let imageUrl: string | null = null;
 
@@ -102,14 +105,21 @@ export function CreateFilmotheque({ visible, onClose }: CreateFilmothequeProps) 
       imageUrl = await uploadToCloudinary(data.imageUrl);
     }
 
-    mutate({
-      params: { userId: user.id },
-      body: {
-        name: data.name,
-        movies: [],
-        imageUrl: imageUrl,
+    mutate(
+      {
+        params: { userId: user.id },
+        body: {
+          name: data.name,
+          movies: [],
+          imageUrl: imageUrl,
+        },
       },
-    });
+      {
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   }
 
   return (

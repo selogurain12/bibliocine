@@ -16,6 +16,7 @@ import { AddInFilmotheque } from "../filmotheque/forms/add-in-filmotheque";
 export function MovieDetails({ id }: { id: string }) {
   const [isModalMovieInProgressVisible, setModalMovieInProgressVisible] = useState(false);
   const [isModalListFilmothequeVisible, setModalListFilmothequeVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const { showToast } = useToast();
   if (!user) {
@@ -73,22 +74,30 @@ export function MovieDetails({ id }: { id: string }) {
     : "https://via.placeholder.com/100x150?text=No+Image";
 
   function markAsFinished() {
-    if (user) {
-      updateStats({
-        params: { userId: user.id, id: statsId },
-        body: {
-          timeSeen: item?.runtime ?? 0,
-        },
-      });
-      mutate({
+    if (!user || isSubmitting) return;
+
+    setIsSubmitting(true);
+    mutate(
+      {
         params: { userId: user.id },
         body: {
           movieId: String(item?.id ?? 0),
         },
-      });
-    } else {
-      console.error("User not authenticated");
-    }
+      },
+      {
+        onSuccess: () => {
+          updateStats({
+            params: { userId: user.id, id: statsId },
+            body: {
+              timeSeen: item?.runtime ?? 0,
+            },
+          });
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   }
   return (
     <View>
