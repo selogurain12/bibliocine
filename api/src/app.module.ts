@@ -23,6 +23,9 @@ import { MovieModule } from "./movie/movie.module";
 import { MovieInProgressModule } from "./movieInProgress/movieInProgress.module";
 import { StatModule } from "./stat/stat.module";
 import { UserModule } from "./user/user.module";
+import { Scheduler } from "rxjs";
+import { NotificationModule } from "./notifications/notification.module";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
@@ -61,6 +64,8 @@ import { UserModule } from "./user/user.module";
     MovieInProgressModule,
     StatModule,
     UserModule,
+    ScheduleModule.forRoot(),
+    NotificationModule,
   ],
 })
 export class AppModule {}
