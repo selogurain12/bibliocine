@@ -9,12 +9,19 @@ import { useAuth } from "context/auth-context";
 import { useToast } from "../ui/toast";
 import { queryClient } from "context/query-client";
 import { useState } from "react";
+import { isFetchError } from "@ts-rest/react-query/v5";
 
 export function BookDetails({id}: {id: string}) {
     const [isModalBookInProgressVisible, setModalBookInProgressVisible] = useState(false);
     const [isModalListBibliothequeVisible, setModalListBibliothequeVisible] = useState(false);
     const {user} = useAuth();
     const { showToast } = useToast();
+
+if (!user) {
+    showToast("Vous devez être connecté pour ajouter un livre", 2000, "error");
+    return null;
+  }
+
     const {data, isLoading} = client.books.getBook.useQuery({
         queryKey: queryKeys.books.getBook({
             pathParams: { id },
@@ -35,12 +42,40 @@ export function BookDetails({id}: {id: string}) {
             },
         });
     const item = data?.body;
+    const { data: stats} = client.stats.simpleStats.useQuery({
+          queryKey: queryKeys.stats.simpleStats({
+            pathParams: { userId: user.id }
+          }),
+          queryData: { params: { userId: user.id }},
+        })
+      
+        const statsId = stats?.body.id ?? "";
+      
+        const { mutate: updateStats } = client.stats.updateStats.useMutation({
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: queryKeys.stats.updateStats(),
+            });
+            showToast("Les stats ont bien été mise à jour !", 2000, "success");
+          },
+          onError: (error) => {
+            if (isFetchError(error)) {
+              showToast(`Erreur lors de la modification des stats : ${error.message}`, 4000, "error");
+            }
+          },
+        });
     const imageUri = item?.imageLink
       ? item.imageLink
       : "https://via.placeholder.com/100x150?text=No+Image";
 
       function markAsFinished() {
         if (user) {
+            updateStats({
+      params: { userId: user.id, id: statsId },
+      body: {
+        pagesRead: item?.pageCount,
+      }
+    })
             mutate({
                 params: { userId: user.id },
                 body: {
@@ -107,7 +142,7 @@ export function BookDetails({id}: {id: string}) {
                 <CreateBookInProgress
                     visible={isModalBookInProgressVisible}
                     onClose={() => setModalBookInProgressVisible(false)}
-                    book={item ? { id: String(item.id), title: item.title, imageLink: item.imageLink } : null}
+                    book={item ?? null}
                 />
                 <AddInBibliotheque
                     visible={isModalListBibliothequeVisible}

@@ -10,12 +10,17 @@ import { useToast } from "../ui/toast";
 import { useState } from "react";
 import { CreateMovieInProgress } from "../movie-in-progress/forms/create";
 import { AddInFilmotheque } from "../filmotheque/forms/add-in-filmotheque";
+import { isFetchError } from "@ts-rest/react-query/v5";
 
 export function MovieDetails({id}: {id: string}) {
     const [isModalMovieInProgressVisible, setModalMovieInProgressVisible] = useState(false);
     const [isModalListFilmothequeVisible, setModalListFilmothequeVisible] = useState(false);
     const {user} = useAuth();
     const { showToast } = useToast();
+    if (!user) {
+    showToast("Vous devez être connecté pour ajouter un livre", 2000, "error");
+    return null;
+  }
     const {data, isLoading} = client.movies.getMovie.useQuery({
         queryKey: queryKeys.movies.getMovie({
             pathParams: { movieId: id },
@@ -36,12 +41,40 @@ export function MovieDetails({id}: {id: string}) {
         },
     });
     const item = data?.body;
+    const { data: stats} = client.stats.simpleStats.useQuery({
+            queryKey: queryKeys.stats.simpleStats({
+              pathParams: { userId: user.id }
+            }),
+            queryData: { params: { userId: user.id }},
+          })
+      
+        const statsId = stats?.body.id ?? "";
+        
+          const { mutate: updateStats } = client.stats.updateStats.useMutation({
+            onSuccess: () => {
+              void queryClient.invalidateQueries({
+                queryKey: queryKeys.stats.updateStats(),
+              });
+              showToast("Les stats ont bien été mise à jour !", 2000, "success");
+            },
+            onError: (error) => {
+              if (isFetchError(error)) {
+                showToast(`Erreur lors de la modification des stats : ${error.message}`, 4000, "error");
+              }
+            },
+          });
     const imageUri = item?.posterPath
       ? `https://image.tmdb.org/t/p/original/${item.posterPath}`
       : "https://via.placeholder.com/100x150?text=No+Image";
 
     function markAsFinished() {
         if (user) {
+            updateStats({
+      params: { userId: user.id, id: statsId },
+      body: {
+        timeSeen: item?.runtime ?? 0,
+      }
+    })
             mutate({
                 params: { userId: user.id },
                 body: {
@@ -104,7 +137,7 @@ export function MovieDetails({id}: {id: string}) {
                 <CreateMovieInProgress
                     visible={isModalMovieInProgressVisible}
                     onClose={() => setModalMovieInProgressVisible(false)}
-                    movie={item ? { id: String(item.id), title: item.title, posterPath: item.posterPath } : null}
+                    movie={item ?? null}
                 />
                 <AddInFilmotheque
                     visible={isModalListFilmothequeVisible}
