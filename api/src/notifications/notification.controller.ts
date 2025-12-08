@@ -7,18 +7,23 @@ import { NotificationService } from "./notification.service";
 @Controller()
 @UseGuards(AuthGuard)
 export class NotificationController {
-      private readonly service: NotificationService;
-    
-      public constructor(service: NotificationService) {
-        this.service = service;
-      }
+  constructor(private readonly service: NotificationService) {}
+
   @TsRestHandler(notificationContract)
   public handle() {
     return tsRestHandler(notificationContract, {
-        registerToken: async ({ body: dto }) => {
-            await this.service.sendPushNotification(dto.token, "Test Notification", "This is a test notification.");
-            return { status: 200, body: { success: true } };
-        }
+      registerToken: async ({ body: dto }) => {
+        this.service.saveToken(dto.token);
+
+        // Optionnel : envoyer une notif test immédiate
+        await this.service.sendPushNotification(
+          dto.token,
+          "Inscription réussie",
+          "Tu recevras désormais les notifications."
+        );
+
+        return { status: 200, body: { success: true } };
+      },
     });
   }
 }

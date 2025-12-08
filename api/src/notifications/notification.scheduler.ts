@@ -8,21 +8,23 @@ export class NotificationScheduler {
 
   constructor(private readonly notificationService: NotificationService) {}
 
-  // Tous les jours à 18h30
+  // Toutes les minutes
   @Cron('* * * * *')
   async sendDailyNotification() {
     this.logger.log('Envoi de la notification programmée');
 
-    const tokens = [
-      'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]',
-      'ExponentPushToken[yyyyyyyyyyyyyyyyyyyyyy]',
-    ];
+    const tokens = this.notificationService.getAllTokens();
+
+    if (!tokens.length) {
+      this.logger.log('Aucun token enregistré, pas de notification envoyée');
+      return;
+    }
 
     for (const token of tokens) {
       await this.notificationService.sendPushNotification(
         token,
         'Notification programmée',
-        'Ceci est une notification envoyée automatiquement à 18h30',
+        'Ceci est une notification envoyée automatiquement',
       );
     }
   }
