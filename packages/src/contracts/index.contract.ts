@@ -11,6 +11,7 @@ import { finishedBookContract } from "./finishedBook.contract";
 import { friendlistContract } from "./friendlist.contract";
 import { finishedMovieContract } from "./finishedMovie.contract";
 import { userContract } from "./user.contract";
+import { notificationContract } from "./notification.contract";
 
 const contract = initContract();
 export const biblioCineContract = contract.router({
@@ -26,4 +27,5 @@ export const biblioCineContract = contract.router({
   finishedMovie: finishedMovieContract,
   friendlist: friendlistContract,
   user: userContract,
+  notification: notificationContract,
 });
