@@ -5,11 +5,13 @@ import { Button } from "./ui/button";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
+import { useAuth } from "context/auth-context";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export function AppBar() {
     const navigation = useNavigation<NavProp>();
+    const { user } = useAuth();
     return (
         <View className="h-16 bg-amber-100 px-4 flex-row items-center gap-2">
             <View className="flex-row justify-start gap-2 w-1/3">
@@ -20,7 +22,13 @@ export function AppBar() {
                 <Text className="text-black text-lg font-bold">Bibliociné</Text>
             </View>
             <View className="flex-row justify-end right-3 w-1/3">
-                <Button className="flex-col items-center gap-1" variant="ghost" onPress={() => navigation.navigate('Register')}>
+                <Button className="flex-col items-center gap-1" variant="ghost" onPress={() =>{
+                    if(user !== null) {
+                        navigation.navigate('Statistiques')
+                    } else {
+                        navigation.navigate("Register")
+                    }
+                    }}>
                     <CircleUserRound /> 
                 </Button>
             </View>
