@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, View, TouchableOpacity } from "react-native";
+import { Modal, View, TouchableOpacity, Image } from "react-native";
 import { Text } from "../../ui/text";
 import { Label } from "../../ui/label";
 import { Input } from "../../ui/input";
@@ -12,6 +12,8 @@ import { queryKeys } from "../../../../packages/src/query-client";
 import { useToast } from "../../ui/toast";
 import { useAuth } from "context/auth-context";
 import { isFetchError } from "@ts-rest/react-query/v5";
+import * as ImagePicker from "expo-image-picker";
+import { uploadToCloudinary } from "utils/upload-image";
 
 type CreateBibliothequeProps = {
   visible: boolean;
@@ -24,13 +26,31 @@ export function CreateBibliotheque({ visible, onClose }: CreateBibliothequeProps
     
   const form = useForm<CreateBibliothequeDto>({
     resolver: zodResolver(createBibliothequeSchema),
-    defaultValues: { name: "" },
+    defaultValues: { 
+      name: "",
+      imageUrl: null,
+    },
   });
+
+  const image = form.watch("imageUrl");
 
    if (!user) {
       showToast("Vous devez être connecté pour ajouter un film", 2000, "error");
       return;
     }
+
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ["images"],
+          allowsEditing: true,
+          quality: 0.5,
+          base64: true,
+        });
+    
+        if (!result.canceled) {
+          form.setValue("imageUrl", result.assets[0].base64!);
+        }
+      };
 
    const { mutate } = client.bibliotheque.createBibliotheque.useMutation({
       onSuccess: () => {
@@ -50,16 +70,22 @@ export function CreateBibliotheque({ visible, onClose }: CreateBibliothequeProps
       },
     });
 
-  function handleSubmit(data: CreateBibliothequeDto) {
+  async function handleSubmit(data: CreateBibliothequeDto) {
     if (!user) {
       showToast("Vous devez être connecté pour ajouter un film", 2000, "error");
       return;
+    }
+    let imageUrl: string | null = null;
+    
+    if (data.imageUrl) {
+      imageUrl = await uploadToCloudinary(data.imageUrl);
     }
     mutate({
       params: { userId: user.id },
       body: {
         name: data.name,
-        books: []
+        books: [],
+        imageUrl: imageUrl,
       },
     });
   }
@@ -69,6 +95,19 @@ export function CreateBibliotheque({ visible, onClose }: CreateBibliothequeProps
       <View className="flex-1 bg-black/50 justify-center items-center">
         <View className="bg-white p-6 rounded-lg w-3/4">
           <Text className="text-lg font-bold mb-4">Nouvelle bibliothèque</Text>
+
+          {image && (
+            <Image
+              source={{ uri: `data:image/jpeg;base64,${image}` }}
+              className="w-32 h-32 rounded-lg self-center mb-4"
+            />
+          )}
+          <TouchableOpacity
+            onPress={pickImage}
+            className="bg-purple-600 p-3 rounded-md mb-4"
+          >
+            <Text className="text-white text-center">Choisir une image</Text>
+          </TouchableOpacity>
 
           <View className="gap-1.5 mb-4">
             <Label htmlFor="name">Nom de la bibliothèque</Label>

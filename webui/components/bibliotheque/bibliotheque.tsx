@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
+import { View, ActivityIndicator, FlatList, TouchableOpacity, Image } from "react-native";
 import { Text } from "../ui/text";
 import { queryKeys } from "../../../packages/src/query-client";
 import { client } from "../../utils/clients/client";
@@ -64,16 +64,19 @@ export function Bibliotheques() {
   const renderItem = ({ item }: { item: BibliothequeDto }) => {
   return (
     <View className="flex-1 m-2 bg-white rounded-lg shadow p-2 border border-gray-200">
-      <View className="flex-row justify-between items-center">
           <TouchableOpacity
-            className="flex-1"
+            className="items-center"
             onPress={() => navigation.navigate("BooksInBibliotheque", { id: item.id })}
           >
-              <Text className="mt-2 text-center" numberOfLines={2}>
-                {item.name}
-              </Text>
+                          <Image
+                            source={{ uri: item.imageUrl ?? "https://via.placeholder.com/100x150?text=No+Image" }}
+                            style={{ width: 100, height: 150, borderRadius: 8 }}
+                        />
+                          <Text className="mt-2 text-center" numberOfLines={2}>
+                            {item.name}
+                          </Text>
           </TouchableOpacity>
-          <View className="flex-row items-center">
+          <View className="flex-row justify-center mt-2">
               <TouchableOpacity
                 onPress={() => {
                   setSelectedBibliotheque(item);
@@ -88,7 +91,6 @@ export function Bibliotheques() {
                 <FontAwesome name="trash" size={18} color="red" />
               </TouchableOpacity>
             </View>
-          </View>
         </View>
   );
 };
