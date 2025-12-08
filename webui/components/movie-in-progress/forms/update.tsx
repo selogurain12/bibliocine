@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, View, TouchableOpacity, Image } from "react-native";
 import { Text } from "../../ui/text";
 import { Label } from "../../ui/label";
@@ -12,15 +12,12 @@ import { queryKeys } from "../../../../packages/src/query-client";
 import { useToast } from "../../ui/toast";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { useAuth } from "context/auth-context";
+import { MovieDto } from "../../../../packages/src/dtos/movie.dto";
 
 type UpdateMovieInProgressProps = {
   visible: boolean;
   onClose: () => void;
-  movie: {
-    id: string;
-    title: string;
-    posterPath: string | null;
-  } | null;
+  movie: MovieDto | null;
   movieInProgress: MovieInProgressDto;
 };
 
@@ -35,6 +32,20 @@ export function UpdateMovieInProgress({ visible, onClose, movie, movieInProgress
       viewingTime: movieInProgress.viewingTime,
     },
   });
+
+  useEffect(() => {
+  if (visible) {
+    form.reset({
+      movieId: movieInProgress.movieId,
+      viewingTime: movieInProgress.viewingTime,
+    });
+  }
+}, [visible, movieInProgress, form]);
+
+  if (!user) {
+    showToast("Vous devez être connecté pour ajouter un livre", 2000, "error");
+    return null;
+  }
 
   const { mutate } = client.moviesInProgress.updateMovieInProgress.useMutation({
     onSuccess: () => {
@@ -52,6 +63,56 @@ export function UpdateMovieInProgress({ visible, onClose, movie, movieInProgress
     },
   });
 
+    const { data: stats} = client.stats.simpleStats.useQuery({
+        queryKey: queryKeys.stats.simpleStats({
+          pathParams: { userId: user.id }
+        }),
+        queryData: { params: { userId: user.id }},
+      })
+  
+    const statsId = stats?.body.id ?? "";
+    
+      const { mutate: updateStats } = client.stats.updateStats.useMutation({
+        onSuccess: () => {
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.stats.updateStats(),
+          });
+          form.reset();
+          showToast("Les stats ont bien été mise à jour !", 2000, "success");
+        },
+        onError: (error) => {
+          if (isFetchError(error)) {
+            showToast(`Erreur lors de la modification des stats : ${error.message}`, 4000, "error");
+          }
+        },
+      });
+
+      const { mutate: finishedMovie } = client.finishedMovie.createFinishedMovie.useMutation({
+                  onSuccess: () => {
+                      void queryClient.invalidateQueries({
+                          queryKey: queryKeys.moviesInProgress.getAllMoviesInProgress(),
+                      });
+                      showToast("Film est marqué comme terminé !", 2000, "success");
+                      onClose();
+                  },
+                  onError: (error) => {
+                      console.error("Error marking movie as finished:", error);
+                  },
+              });
+
+              const { mutate: deleteMovieInProgress } = client.moviesInProgress.deleteMovieInProgress.useMutation({
+                  onSuccess: () => {
+                      void queryClient.invalidateQueries({
+                          queryKey: queryKeys.moviesInProgress.getAllMoviesInProgress(),
+                      });
+                      showToast("Film est supprimé de la liste des films en cours !", 2000, "success");
+                      onClose();
+                  },
+                  onError: (error) => {
+                      console.error("Error marking movie as finished:", error);
+                  },
+              });
+
   const imageUri = movie?.posterPath
     ? `https://image.tmdb.org/t/p/original/${movie.posterPath}`
     : "https://via.placeholder.com/100x150?text=No+Image";
@@ -62,6 +123,34 @@ export function UpdateMovieInProgress({ visible, onClose, movie, movieInProgress
       return;
     }
 
+    if(movie !== null && movie !== undefined) {
+      if((movie.runtime ?? 0) <= 0) {
+        showToast("Le temps de visionnage doit être supérieur à zéro.", 2000, "error");
+        return;
+      }
+      if(data.viewingTime !== undefined && data.viewingTime > (movie.runtime ?? 0)) {
+        showToast("Le temps de visionnage ne peut pas dépasser la durée totale du film.", 2000, "error");
+        return;
+      }
+      if(data.movieId && data.viewingTime === (movie.runtime ?? 0)) {
+        finishedMovie({
+          params: { userId: user.id },
+          body: {
+            movieId: data.movieId,
+          },
+        });
+        deleteMovieInProgress({
+          params: { id: movieInProgress.id, userId: user.id },
+        });
+      }
+      else{
+updateStats({
+      params: { userId: user.id, id: statsId },
+      body: {
+        timeSeen: (data.viewingTime ?? movieInProgress.viewingTime) - movieInProgress.viewingTime,
+      }
+    })
+
     mutate({
       params: { id: movieInProgress.id, userId: user.id },
       body: {
@@ -69,6 +158,8 @@ export function UpdateMovieInProgress({ visible, onClose, movie, movieInProgress
         viewingTime: data.viewingTime,
       },
     });
+      }
+    }
   }
 
   return (

@@ -12,15 +12,12 @@ import { queryKeys } from "../../../../packages/src/query-client";
 import { useToast } from "../../ui/toast";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { useAuth } from "context/auth-context";
+import { MovieDto } from "../../../../packages/src/dtos/movie.dto";
 
 type CreateMovieInProgressProps = {
   visible: boolean;
   onClose: () => void;
-  movie: {
-    id: string;
-    title: string;
-    posterPath: string | null;
-  } | null;
+  movie: MovieDto | null;
 };
 
 export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieInProgressProps) {
@@ -30,10 +27,15 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
   const form = useForm<CreateMovieInProgressDto>({
     resolver: zodResolver(createMovieInProgressSchema),
     defaultValues: {
-      movieId: movie?.id ?? "",
+      movieId: String(movie?.id) ?? "",
       viewingTime: 0,
     },
   });
+
+  if (!user) {
+    showToast("Vous devez être connecté pour ajouter un livre", 2000, "error");
+    return null;
+  }
 
   const { mutate } = client.moviesInProgress.createMovieInProgress.useMutation({
     onSuccess: () => {
@@ -51,23 +53,91 @@ export function CreateMovieInProgress({ visible, onClose, movie }: CreateMovieIn
     },
   });
 
+  const { data: stats} = client.stats.simpleStats.useQuery({
+      queryKey: queryKeys.stats.simpleStats({
+        pathParams: { userId: user.id }
+      }),
+      queryData: { params: { userId: user.id }},
+    })
+
+  const statsId = stats?.body.id ?? "";
+  
+    const { mutate: updateStats } = client.stats.updateStats.useMutation({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.stats.updateStats(),
+        });
+        form.reset();
+        showToast("Les stats ont bien été mise à jour !", 2000, "success");
+      },
+      onError: (error) => {
+        if (isFetchError(error)) {
+          showToast(`Erreur lors de la modification des stats : ${error.message}`, 4000, "error");
+        }
+      },
+    });
+
+    const { mutate: finishedMovie } = client.finishedMovie.createFinishedMovie.useMutation({
+            onSuccess: () => {
+                void queryClient.invalidateQueries({
+                    queryKey: queryKeys.moviesInProgress.getAllMoviesInProgress(),
+                });
+                showToast("Film est marqué comme terminé !", 2000, "success");
+                onClose();
+            },
+            onError: (error) => {
+                console.error("Error marking movie as finished:", error);
+            },
+        });
+
   const imageUri = movie?.posterPath
     ? `https://image.tmdb.org/t/p/original/${movie.posterPath}`
     : "https://via.placeholder.com/100x150?text=No+Image";
+
+  console.log(form.formState.errors);
+
+  console.log(form.getValues());
 
   function onSubmit(data: CreateMovieInProgressDto) {
     if (!user) {
       showToast("Vous devez être connecté pour ajouter un film", 2000, "error");
       return;
     }
+    console.log("Movie:", data.movieId, "Viewing Time:", data.viewingTime);
+
+    if(movie !== null && movie !== undefined) {
+      if((movie.runtime ?? 0) <= 0) {
+        showToast("Le temps de visionnage doit être supérieur à zéro.", 2000, "error");
+        return;
+      }
+      if(data.viewingTime > (movie.runtime ?? 0)) {
+        showToast("Le temps de visionnage ne peut pas dépasser la durée totale du film.", 2000, "error");
+        return;
+      }
+      if(data.viewingTime === (movie.runtime ?? 0)) {
+        finishedMovie({
+          params: { userId: user.id },
+          body: {
+            movieId: data.movieId,
+          },
+        });
+      } else {
+        updateStats({
+      params: { userId: user.id, id: statsId },
+      body: {
+        timeSeen: data.viewingTime,
+      }
+    })
 
     mutate({
       params: { userId: user.id },
       body: {
-        movieId: String(movie?.id ?? "0"),
+        movieId: String(movie?.id) ?? "0",
         viewingTime: data.viewingTime,
       },
     });
+      }
+    }
   }
 
   return (
