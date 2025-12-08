@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, View, TouchableOpacity, Image } from "react-native";
 import { Text } from "../../ui/text";
 import { Label } from "../../ui/label";
@@ -12,15 +12,12 @@ import { queryKeys } from "../../../../packages/src/query-client";
 import { useToast } from "../../ui/toast";
 import { isFetchError } from "@ts-rest/react-query/v5";
 import { useAuth } from "context/auth-context";
+import { BookDto } from "../../../../packages/src/dtos/book.dto";
 
 type UpdateBookInProgressProps = {
   visible: boolean;
   onClose: () => void;
-  book: {
-    id: string;
-    title: string;
-    imageLink: string | null;
-  } | null;
+  book: BookDto | null;
   bookInProgress: BookInProgressDto;
 };
 
@@ -35,6 +32,20 @@ export function UpdateBookInProgress({ visible, onClose, book, bookInProgress }:
       currentPage: bookInProgress.currentPage,
     },
   });
+
+  useEffect(() => {
+    if (visible) {
+      form.reset({
+        bookId: bookInProgress.bookId,
+        currentPage: bookInProgress.currentPage,
+      });
+    }
+  }, [visible, bookInProgress, form]);
+
+  if (!user) {
+    showToast("Vous devez être connecté pour ajouter un livre", 2000, "error");
+    return null;
+  }
 
   const { mutate } = client.booksInProgress.updateBookInProgress.useMutation({
     onSuccess: () => {
@@ -52,6 +63,56 @@ export function UpdateBookInProgress({ visible, onClose, book, bookInProgress }:
     },
   });
 
+  const { data: stats} = client.stats.simpleStats.useQuery({
+      queryKey: queryKeys.stats.simpleStats({
+        pathParams: { userId: user.id }
+      }),
+      queryData: { params: { userId: user.id }},
+    })
+  
+    const statsId = stats?.body.id ?? "";
+  
+    const { mutate: updateStats } = client.stats.updateStats.useMutation({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.stats.updateStats(),
+        });
+        form.reset();
+        showToast("Les stats ont bien été mise à jour !", 2000, "success");
+      },
+      onError: (error) => {
+        if (isFetchError(error)) {
+          showToast(`Erreur lors de la modification des stats : ${error.message}`, 4000, "error");
+        }
+      },
+    });
+
+    const { mutate: finishedBook } = client.finishedBook.createFinishedBook.useMutation({
+                      onSuccess: () => {
+                          void queryClient.invalidateQueries({
+                              queryKey: queryKeys.booksInProgress.getAllBooksInProgress(),
+                          });
+                          showToast("Livre est marqué comme terminé !", 2000, "success");
+                          onClose();
+                      },
+                      onError: (error) => {
+                          console.error("Error marking book as finished:", error);
+                      },
+                  });
+    
+                  const { mutate: deleteBookInProgress } = client.booksInProgress.deleteBookInProgress.useMutation({
+                      onSuccess: () => {
+                          void queryClient.invalidateQueries({
+                              queryKey: queryKeys.booksInProgress.getAllBooksInProgress(),
+                          });
+                          showToast("Livre est supprimé de la liste des livres en cours !", 2000, "success");
+                          onClose();
+                      },
+                      onError: (error) => {
+                          console.error("Error marking book as finished:", error);
+                      },
+                  });
+
   const imageUri = book?.imageLink
     ? book.imageLink
     : "https://via.placeholder.com/100x150?text=No+Image";
@@ -62,6 +123,34 @@ export function UpdateBookInProgress({ visible, onClose, book, bookInProgress }:
       return;
     }
 
+    if(book !== null && book !== undefined) {
+      if(book.pageCount <= 0) {
+        showToast("Le nombre de pages lues doit être supérieur à zéro.", 2000, "error");
+        return;
+      }
+      if(data.currentPage !== undefined && data.currentPage > book.pageCount) {
+        showToast("Le nombre de pages lues ne peut pas dépasser le nombre total de pages du livre.", 2000, "error");
+        return;
+      }
+      if(data.currentPage === book.pageCount) {
+        finishedBook({
+          params: { userId: user.id },
+          body: {
+            bookId: book.id,
+          },
+        });
+        deleteBookInProgress({
+          params: { id: bookInProgress.id, userId: user.id },
+        });
+      }
+      else {
+        updateStats({
+      params: { userId: user.id, id: statsId },
+      body: {
+        pagesRead: (data.currentPage ?? bookInProgress.currentPage) - bookInProgress.currentPage,
+      }
+    })
+
     mutate({
       params: { id: bookInProgress.id, userId: user.id },
       body: {
@@ -69,6 +158,8 @@ export function UpdateBookInProgress({ visible, onClose, book, bookInProgress }:
         currentPage: data.currentPage,
       },
     });
+      }
+    }
   }
 
   return (
