@@ -4,7 +4,7 @@ import { userSchema } from "./user.dto";
 export const createFilmothequeSchema = z.object({
   name: z.string().min(1).max(100),
   movies: z.array(z.string()).optional(),
-  imageBase64: z.string().nullable(),
+  imageUrl: z.string().nullable(),
 });
 
 export const filmothequeSchema = createFilmothequeSchema.extend({

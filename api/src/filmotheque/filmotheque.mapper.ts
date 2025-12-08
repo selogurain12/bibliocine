@@ -26,7 +26,7 @@ export class FilmothequeMapper {
     return {
       id: entity.id,
       name: entity.name,
-      imageBase64: entity.imageUrl,
+      imageUrl: entity.imageUrl,
       movies: entity.movies,
       users: this.userMapper.entitiesToDtos(users),
     };
@@ -42,7 +42,7 @@ export class FilmothequeMapper {
   }
 
   public async createDtoToEntity(
-  dto: CreateFilmothequeDto & { imageUrl: string | null },
+  dto: CreateFilmothequeDto,
   userId: string,
   em: EntityManager,
 ): Promise<Filmotheque> {

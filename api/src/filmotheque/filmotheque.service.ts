@@ -76,17 +76,9 @@ export class FilmothequeService {
           },
         });
       }
-      let imageUrl: string | null = null;
-      console.log(parameters.imageBase64)
-
-      if (parameters.imageBase64) {
-        const upload = await this.cloudinaryService.uploadBase64Image(parameters.imageBase64);
-        imageUrl = upload.secure_url;
-      }
-      console.log(imageUrl)
 
       const item = await this.filmothequeMapper.createDtoToEntity(
-        { ...parameters, imageUrl },
+        parameters,
         userId,
         em,
       );
