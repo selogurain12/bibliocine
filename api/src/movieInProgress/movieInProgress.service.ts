@@ -11,6 +11,7 @@ import type { ListResult } from "../../../packages/src/dtos/list-result.dto";
 import { User } from "../user/user.entity";
 import { MovieInProgress } from "./movieInProgress.entity";
 import { MovieInProgressMapper } from "./movieInProgress.mapper";
+import { FinishedMovie } from "src/finishedMovie/finishedMovie.entity";
 
 @Injectable()
 export class MovieInProgressService {
@@ -82,6 +83,38 @@ export class MovieInProgressService {
           },
         );
       }
+      const repositoryMovieInProgress = em.getRepository(MovieInProgress);
+      const existingMovieInProgress = await repositoryMovieInProgress.findOne({
+        $and: [{ movieId: parameters.movieId }, { user: { id: userId } }],
+      });
+      if (existingMovieInProgress) {
+        throw new TsRestException(
+          movieInProgressContract.createMovieInProgress,
+          {
+            status: 409,
+            body: {
+              error: "MovieInProgressExists",
+              message: `Cannot create movie in progress with movieId ${parameters.movieId} because a MovieInProgress already exists for user ${userId}`,
+            },
+          },
+        );
+      }
+      const finishedMovieRepository = em.getRepository(FinishedMovie);
+      const existingFinishedMovie = await finishedMovieRepository.findOne({
+        $and: [{ movieId: parameters.movieId }, { user: { id: userId } }],
+      });
+      if (existingFinishedMovie) {
+        throw new TsRestException(
+          movieInProgressContract.createMovieInProgress,
+          {
+            status: 409,
+            body: {
+              error: "FinishedMovieExists",
+              message: `Cannot create movie in progress with movieId ${parameters.movieId} because a FinishedMovie already exists for user ${userId}`,
+            },
+          },
+        );
+      }
       const item = await this.movieInProgressMapper.createDtoToEntity(
         parameters,
         userId,
@@ -135,6 +168,22 @@ export class MovieInProgressService {
             body: {
               error: "MovieInProgressNotFound",
               message: `MovieInProgress with id ${id} not found`,
+            },
+          },
+        );
+      }
+      const finishedMovieRepository = em.getRepository(FinishedMovie);
+      const existingFinishedMovie = await finishedMovieRepository.findOne({
+        $and: [{ movieId: existingEntity.movieId }, { user: { id: userId } }],
+      });
+      if (existingFinishedMovie) {
+        throw new TsRestException(
+          movieInProgressContract.updateMovieInProgress,
+          {
+            status: 409,
+            body: {
+              error: "FinishedMovieExists",
+              message: `Cannot update movie in progress with movieId ${existingEntity.movieId} because a FinishedMovie already exists for user ${userId}`,
             },
           },
         );

@@ -71,6 +71,19 @@ export class FinishedBookService {
           },
         });
       }
+      const repositoryFinishedBook = em.getRepository(FinishedBook);
+      const existingFinishedBook = await repositoryFinishedBook.findOne({
+        $and: [{ bookId: parameters.bookId }, { user: { id: userId } }],
+      });
+      if (existingFinishedBook) {
+        throw new TsRestException(finishedBookContract.createFinishedBook, {
+          status: 409,
+          body: {
+            error: "FinishedBookAlreadyExists",
+            message: `FinishedBook with bookId ${parameters.bookId} for user ${userId} already exists`,
+          },
+        });
+      }
       const item = await this.finishedBookMapper.createDtoToEntity(
         parameters,
         userId,

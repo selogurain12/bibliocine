@@ -71,6 +71,19 @@ export class FinishedMovieService {
           },
         });
       }
+      const repositoryFinishedMovie = em.getRepository(FinishedMovie);
+      const existingFinishedMovie = await repositoryFinishedMovie.findOne({
+        $and: [{ movieId: parameters.movieId }, { user: { id: userId } }],
+      });
+      if (existingFinishedMovie) {
+        throw new TsRestException(finishedMovieContract.createFinishedMovie, {
+          status: 409,
+          body: {
+            error: "FinishedMovieAlreadyExists",
+            message: `FinishedMovie with movieId ${parameters.movieId} already exists for user ${userId}`,
+          },
+        });
+      }
       const item = await this.finishedMovieMapper.createDtoToEntity(
         parameters,
         userId,

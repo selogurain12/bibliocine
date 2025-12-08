@@ -10,6 +10,9 @@ import { bookInProgressContract } from "../../../packages/src/contracts/bookInPr
 import type { ListResult } from "../../../packages/src/dtos/list-result.dto";
 import { BookInProgress } from "./bookInProgress.entity";
 import { BookInProgressMapper } from "./bookInProgress.mapper";
+import { movieInProgressContract } from "../../../packages/src/contracts/movieInProgress.contract";
+import { finishedBookContract } from "../../../packages/src/contracts/finishedBook.contract";
+import { User } from "src/user/user.entity";
 
 @Injectable()
 export class BookInProgressService {
@@ -67,6 +70,46 @@ export class BookInProgressService {
     const em = this.orm.em.fork();
     await em.begin();
     try {
+       const repository = em.getRepository(User);
+            const existingUser = await repository.findOne({ id: userId });
+            if (!existingUser) {
+              throw new TsRestException(
+                movieInProgressContract.createMovieInProgress,
+                {
+                  status: 404,
+                  body: {
+                    error: "UserNotFound",
+                    message: `User with id ${userId} not found`,
+                  },
+                },
+              );
+            }
+      const bookInProgressRepository = em.getRepository(BookInProgress);
+      const existingBookInProgress = await bookInProgressRepository.findOne({
+        $and: [{ bookId: parameters.bookId }, { user: { id: userId } }],
+      });
+      if (existingBookInProgress) {
+        throw new TsRestException(bookInProgressContract.createBookInProgress, {
+          status: 409,
+          body: {
+            error: "BookInProgressAlreadyExists",
+            message: `BookInProgress with bookId ${parameters.bookId} already exists for user ${userId}`,
+          },
+        });
+      }
+      const finishedBookRepository = em.getRepository(BookInProgress);
+      const existingFinishedBook = await finishedBookRepository.findOne({
+        $and: [{ bookId: parameters.bookId }, { user: { id: userId } }],
+      });
+      if (existingFinishedBook) {
+        throw new TsRestException(finishedBookContract.createFinishedBook, {
+          status: 409,
+          body: {
+            error: "FinishedBookExists",
+            message: `Cannot create finished book with bookId ${parameters.bookId} because a FinishedBook already exists for user ${userId}`,
+          },
+        });
+      }
       const item = await this.bookInProgressMapper.createDtoToEntity(
         parameters,
         userId,
@@ -118,6 +161,19 @@ export class BookInProgressService {
           body: {
             error: "BookInProgressNotFound",
             message: `BookInProgress with id ${id} not found`,
+          },
+        });
+      }
+      const finishedBookRepository = em.getRepository(BookInProgress);
+      const existingFinishedBook = await finishedBookRepository.findOne({
+        $and: [{ bookId: existingEntity.bookId }, { user: { id: userId } }],
+      });
+      if (existingFinishedBook) {
+        throw new TsRestException(finishedBookContract.createFinishedBook, {
+          status: 409,
+          body: {
+            error: "FinishedBookExists",
+            message: `Cannot update to finished book with bookId ${existingEntity.bookId} because a FinishedBook already exists for user ${userId}`,
           },
         });
       }
