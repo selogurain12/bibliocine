@@ -44,6 +44,7 @@ export function FinishedMovie() {
       showToast("Film supprimé de vos films terminés", 2000, "success");
     },
     onError: (error) => {
+      console.log(error);
       if (isFetchError(error)) {
         showToast(`Erreur: ${error.message}`, 2000, "error");
       }
