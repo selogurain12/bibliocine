@@ -8,6 +8,7 @@ import { isFetchError } from "@ts-rest/react-query/v5";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Progress } from "components/ui/progress";
 import { MovieInProgressDto } from "../../../packages/src/dtos/movieInProgress.dto";
 import { MovieDto } from "../../../packages/src/dtos/movie.dto";
 import { useToast } from "../ui/toast";
@@ -103,6 +104,11 @@ export function MovieInProgress() {
       (movieprogress: MovieInProgressDto) => movieprogress.movieId === String(item.id)
     );
 
+    let progress = 0;
+    if (movieProgress && item.runtime) {
+      progress = (100 * movieProgress.viewingTime) / item.runtime;
+    }
+
     return (
       <View className="m-2 flex-1 rounded-lg border border-gray-200 bg-white p-2 shadow">
         <TouchableOpacity
@@ -131,6 +137,13 @@ export function MovieInProgress() {
             className="p-2">
             <FontAwesome name="pencil" size={18} color="black" />
           </TouchableOpacity>
+
+          {movieProgress && (
+            <View className="mt-2">
+              <Progress value={progress} />
+              <Text className="mt-1 text-center text-sm">{Math.round(progress)}% vu</Text>
+            </View>
+          )}
 
           <TouchableOpacity
             onPress={() => {

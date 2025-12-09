@@ -5,6 +5,9 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FontAwesome } from "@expo/vector-icons";
+import { queryClient } from "context/query-client";
+import { isFetchError } from "@ts-rest/react-query/v5";
 import { Text } from "../ui/text";
 import { client } from "../../utils/clients/client";
 import { queryKeys } from "../../../packages/src/query-client";
@@ -28,6 +31,22 @@ export function MovieInFilmotheque({ id }: { id: string }) {
     }),
     queryData: { params: { userId: user?.id ?? "", id } },
     enabled: !!user,
+  });
+
+  const { mutate: deleteMovie } = client.filmotheque.deleteMovieFromFilmotheque.useMutation({
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.filmotheque.getFilmotheque({
+          pathParams: { id, userId: user?.id ?? "" },
+        }),
+      });
+      showToast("Film supprimé de votre filmotheque", 2000, "success");
+    },
+    onError: (error) => {
+      if (isFetchError(error)) {
+        showToast(`Erreur: ${error.message}`, 2000, "error");
+      }
+    },
   });
 
   useEffect(() => {
@@ -64,13 +83,21 @@ export function MovieInFilmotheque({ id }: { id: string }) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
+  function handleDelete(itemId: string) {
+    if (!user) {
+      showToast("Vous devez être connecté", 2000, "error");
+      return;
+    }
+    deleteMovie({ params: { id, userId: user.id, movieId: itemId } });
+  }
+
   const renderMovie = ({ item }: { item: MovieDto }) => (
-    <TouchableOpacity
-      className="m-2 flex-1"
-      onPress={() => {
-        navigation.navigate("MovieDetail", { id: item.id });
-      }}>
-      <View className="items-center rounded-lg border border-gray-200 bg-white p-2 shadow">
+    <View className="m-2 flex-1 rounded-lg border border-gray-200 bg-white p-2 shadow">
+      <TouchableOpacity
+        className="items-center"
+        onPress={() => {
+          navigation.navigate("MovieDetail", { id: item.id });
+        }}>
         <Image
           source={{ uri: `https://image.tmdb.org/t/p/w200${item.posterPath}` }}
           style={{ width: 100, height: 150, borderRadius: 8 }}
@@ -78,8 +105,17 @@ export function MovieInFilmotheque({ id }: { id: string }) {
         <Text className="mt-2 text-center" numberOfLines={2}>
           {item.title}
         </Text>
+      </TouchableOpacity>
+      <View className="mt-2 flex-row justify-center">
+        <TouchableOpacity
+          onPress={() => {
+            handleDelete(item.id);
+          }}
+          className="mt-2 rounded px-3 py-1">
+          <FontAwesome name="trash" size={18} color="red" />
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   return (

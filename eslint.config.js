@@ -80,7 +80,6 @@ export default tseslint.config(
       quotes: ["error", "double"],
       "max-len": ["error", { code: 100, ignoreUrls: true }],
       "import/no-unresolved": "off",
-      "import/named": "error",
       "import/default": "error",
       "import/namespace": "error",
       "import/no-duplicates": "error",

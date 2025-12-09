@@ -8,6 +8,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "App";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Progress } from "components/ui/progress";
 import { BookInProgressDto } from "../../../packages/src/dtos/bookInProgress.dto";
 import { BookDto } from "../../../packages/src/dtos/book.dto";
 import { useToast } from "../ui/toast";
@@ -103,6 +104,10 @@ export function BookInProgress() {
     const bookProgress = data?.body.data.find(
       (bookprogress: BookInProgressDto) => bookprogress.bookId === item.id
     );
+    let progress = 0;
+    if (bookProgress) {
+      progress = (100 * bookProgress.currentPage) / item.pageCount;
+    }
     return (
       <View className="m-2 flex-1 rounded-lg border border-gray-200 bg-white p-2 shadow">
         <TouchableOpacity
@@ -132,6 +137,13 @@ export function BookInProgress() {
             className="p-2">
             <FontAwesome name="pencil" size={18} color="black" />
           </TouchableOpacity>
+
+          {bookProgress && (
+            <View className="mt-2">
+              <Progress value={progress} />
+              <Text className="mt-1 text-center text-sm">{Math.round(progress)}% lu</Text>
+            </View>
+          )}
 
           <TouchableOpacity
             onPress={() => {
