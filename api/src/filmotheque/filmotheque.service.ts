@@ -179,6 +179,58 @@ export class FilmothequeService {
     }
   }
 
+  public async deleteMovie(
+    filmothequeId: string,
+    movieId: string,
+    userId: string,
+  ): Promise<FilmothequeDto> {
+    const em = this.orm.em.fork();
+    await em.begin();
+
+    try {
+      const repository = em.getRepository(Filmotheque);
+      const entity = await repository.findOne(
+        { id: filmothequeId, users: { id: userId } },
+        { populate: ["users"] },
+      );
+
+      if (!entity) {
+        throw new TsRestException(filmothequeContract.deleteMovieFromFilmotheque, {
+          status: 404,
+          body: {
+            error: "FilmothequeNotFound",
+            message: `Filmotheque avec id ${filmothequeId} introuvable`,
+          },
+        });
+      }
+
+      entity.movies = entity.movies?.filter((movie) => movie !== movieId);
+
+      await em.persistAndFlush(entity);
+      await em.commit();
+
+      return await this.filmothequeMapper.entityToDto(entity, em);
+    } catch (error) {
+      await em.rollback();
+
+      throw error instanceof Error 
+      ? new TsRestException(filmothequeContract.deleteMovieFromFilmotheque, {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          body: {
+            error: "InternalError",
+            message: error.message || "Suppression du film échouée",
+          },
+        }) 
+      : new TsRestException(filmothequeContract.deleteMovieFromFilmotheque, {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          body: {
+            error: "InternalError",
+            message: "Suppression du film échouée",
+          },
+        });
+    }
+  }
+
   public async delete(id: string, userId: string): Promise<void> {
     const em = this.orm.em.fork();
     await em.begin();

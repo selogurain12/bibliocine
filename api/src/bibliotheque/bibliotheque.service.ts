@@ -173,6 +173,58 @@ export class BibliothequeService {
     }
   }
 
+  public async deleteBook(
+    bibliothequeId: string,
+    bookId: string,
+    userId: string,
+  ): Promise<BibliothequeDto> {
+    const em = this.orm.em.fork();
+    await em.begin();
+
+    try {
+      const repository = em.getRepository(Bibliotheque);
+      const entity = await repository.findOne(
+        { id: bibliothequeId, users: { id: userId } },
+        { populate: ["users"] },
+      );
+
+      if (!entity) {
+        throw new TsRestException(bibliothequeContract.deleteBookFromBibliotheque, {
+          status: 404,
+          body: {
+            error: "BibliothequeNotFound",
+            message: `Bibliotheque avec id ${bibliothequeId} introuvable`,
+          },
+        });
+      }
+
+      entity.books = entity.books?.filter((book) => book !== bookId);
+
+      await em.persistAndFlush(entity);
+      await em.commit();
+
+      return await this.bibliothequeMapper.entityToDto(entity, em);
+    } catch (error) {
+      await em.rollback();
+
+      throw error instanceof Error 
+      ? new TsRestException(bibliothequeContract.deleteBookFromBibliotheque, {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          body: {
+            error: "InternalError",
+            message: error.message || "Suppression du livre échouée",
+          },
+        }) 
+      : new TsRestException(bibliothequeContract.deleteBookFromBibliotheque, {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          body: {
+            error: "InternalError",
+            message: "Suppression du livre échouée",
+          },
+        });
+    }
+  }
+
   public async delete(id: string, userId: string): Promise<void> {
     const em = this.orm.em.fork();
     await em.begin();

@@ -39,6 +39,14 @@ export class BibliothequeController {
         );
         return { status: 200, body: bibliotheque };
       },
+      deleteBookFromBibliotheque: async ({ params }) => {
+        const bibliotheque = await this.service.deleteBook(
+          params.id,
+          params.bookId,
+          params.userId,
+        );
+        return { status: 200, body: bibliotheque };
+      },
       deleteBibliotheque: async ({ params: parameters }) => {
         await this.service.delete(parameters.id, parameters.userId);
         return { status: 200, body: undefined };

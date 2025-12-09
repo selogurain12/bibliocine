@@ -67,6 +67,21 @@ export const filmothequeContract = contract.router(
         404: errorSchema,
       },
     },
+    deleteMovieFromFilmotheque: {
+      path: "/:id/movies/:movieId",
+      method: "DELETE",
+      summary: "Supprimer un film d'une filmotheque",
+      description: "Supprime un film spécifique d'une filmotheque donnée",
+      pathParams: idSchema.extend({
+        userId: z.string().uuid(),
+        movieId: z.string().uuid(),
+      }),
+      body: neverDtoSchema,
+      responses: {
+        200: filmothequeSchema,
+        404: errorSchema,
+      },
+    },
     deleteFilmotheque: {
       path: "/:id",
       method: "DELETE",

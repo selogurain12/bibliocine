@@ -67,6 +67,21 @@ export const bibliothequeContract = contract.router(
         404: errorSchema,
       },
     },
+    deleteBookFromBibliotheque: {
+      path: "/:id/books/:bookId",
+      method: "DELETE",
+      summary: "Supprimer un livre d'une bibliotheque",
+      description: "Supprime un livre spécifique d'une bibliotheque donnée",
+      pathParams: idSchema.extend({
+        userId: z.string().uuid(),
+        bookId: z.string().uuid(),
+      }),
+      body: neverDtoSchema,
+      responses: {
+        200: bibliothequeSchema,
+        404: errorSchema,
+      },
+    },
     deleteBibliotheque: {
       path: "/:id",
       method: "DELETE",

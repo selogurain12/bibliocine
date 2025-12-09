@@ -40,6 +40,14 @@ export class FilmothequeController {
         );
         return { status: 200, body: filmotheque };
       },
+      deleteMovieFromFilmotheque: async ({ params }) => {
+        const filmotheque = await this.service.deleteMovie(
+          params.id,
+          params.movieId,
+          params.userId,
+        );
+        return { status: 200, body: filmotheque };
+      },
       deleteFilmotheque: async ({ params: parameters }) => {
         await this.service.delete(parameters.id, parameters.userId);
         return { status: 200, body: undefined };
