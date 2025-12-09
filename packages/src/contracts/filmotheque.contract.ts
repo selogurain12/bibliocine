@@ -74,7 +74,7 @@ export const filmothequeContract = contract.router(
       description: "Supprime un film spécifique d'une filmotheque donnée",
       pathParams: idSchema.extend({
         userId: z.string().uuid(),
-        movieId: z.string().uuid(),
+        movieId: z.string(),
       }),
       body: neverDtoSchema,
       responses: {

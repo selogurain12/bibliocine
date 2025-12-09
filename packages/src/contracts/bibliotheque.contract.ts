@@ -74,7 +74,7 @@ export const bibliothequeContract = contract.router(
       description: "Supprime un livre spécifique d'une bibliotheque donnée",
       pathParams: idSchema.extend({
         userId: z.string().uuid(),
-        bookId: z.string().uuid(),
+        bookId: z.string(),
       }),
       body: neverDtoSchema,
       responses: {
